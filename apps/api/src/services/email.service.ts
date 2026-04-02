@@ -124,6 +124,57 @@ const templates: Record<string, (data: any) => string> = {
         <p style="color:#9CA3AF;font-size:12px">You're receiving this because you registered for an event on Owambe.</p>
       </div>
     </div>`,
+
+  'vendor-verified': (d) => `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+      <div style="background:#2D6A4F;padding:24px;border-radius:8px 8px 0 0;text-align:center">
+        <h1 style="color:#fff;margin:0">owambe.com</h1>
+      </div>
+      <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
+        <h2 style="color:#1A1612">Your profile is live! ✅</h2>
+        <p>Hi ${d.firstName}, congratulations — <strong>${d.businessName}</strong> is now verified and live on Owambe!</p>
+        <p style="color:#374151">You'll start appearing in search results immediately. Clients can now book or send you quote requests.</p>
+        <div style="text-align:center;margin:28px 0">
+          <a href="${d.profileUrl}" style="background:#2D6A4F;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold">View Your Profile →</a>
+        </div>
+        <p style="color:#6B7280;font-size:13px">💡 Tip: Complete your portfolio with at least 5 photos to rank higher in search results.</p>
+      </div>
+    </div>`,
+
+  'vendor-rejected': (d) => `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+      <div style="background:#E76F2A;padding:24px;border-radius:8px 8px 0 0;text-align:center">
+        <h1 style="color:#fff;margin:0">owambe.com</h1>
+      </div>
+      <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
+        <h2 style="color:#1A1612">Profile Review Update</h2>
+        <p>Hi ${d.firstName}, we were unable to approve <strong>${d.businessName}</strong> at this time.</p>
+        <div style="background:#FEF3C7;border-radius:8px;padding:16px;margin:20px 0">
+          <p style="margin:0;color:#92400E"><strong>Reason:</strong> ${d.reason}</p>
+        </div>
+        <p style="color:#374151">Please update your profile and resubmit. Most profiles are approved within 24 hours once complete.</p>
+        <div style="text-align:center;margin:24px 0">
+          <a href="${d.resubmitUrl}" style="background:#E76F2A;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold">Update & Resubmit →</a>
+        </div>
+      </div>
+    </div>`,
+
+  'booker-deposit-confirmed': (d) => `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+      <div style="background:#2D6A4F;padding:24px;border-radius:8px 8px 0 0;text-align:center">
+        <h1 style="color:#fff;margin:0">owambe.com</h1>
+      </div>
+      <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
+        <h2 style="color:#1A1612">Booking Confirmed ✅ Deposit Paid</h2>
+        <p>Hi ${d.firstName}, your deposit payment has been received and your booking with <strong>${d.vendorName}</strong> is now confirmed!</p>
+        <div style="background:#EEF7F2;border-radius:8px;padding:16px;margin:20px 0">
+          <p style="margin:4px 0">📅 Event Date: <strong>${new Date(d.eventDate).toLocaleDateString('en-NG')}</strong></p>
+          <p style="margin:4px 0">💰 Deposit paid: <strong>${d.depositPaid}</strong></p>
+          <p style="margin:4px 0">📋 Reference: <strong>${d.reference}</strong></p>
+        </div>
+        <p style="color:#6B7280;font-size:13px">Your deposit is held securely in escrow. The vendor receives it 24 hours after your event completes successfully.</p>
+      </div>
+    </div>`,
 };
 
 // ─── SEND EMAIL ──────────────────────────────────────

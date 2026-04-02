@@ -1,10 +1,5 @@
-// These re-export from all-routes.ts for the main app index
-export {
-  sponsorsRouter,
-  emailsRouter,
-  attendeesRouter,
-  uploadRouter,
-  aiRouter,
-  notificationsRouter,
-  adminRouter,
-} from './all-routes';
+// Route barrel — individual route files are imported directly in index.ts
+// This file is kept for reference only.
+// All routes: auth, events, attendees, vendors, bookings, payments,
+//             speakers, sponsors, emails, analytics, upload, ai, admin, notifications
+export {};

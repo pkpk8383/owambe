@@ -1,6 +1,6 @@
 import request from 'supertest';
-import { app } from '../src/index';
-import { prisma } from '../src/database/client';
+import { app } from '../app';
+import { prisma } from '../database/client';
 import bcrypt from 'bcryptjs';
 
 // ─── TEST SETUP ──────────────────────────────────────

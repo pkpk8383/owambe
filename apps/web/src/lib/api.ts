@@ -123,6 +123,8 @@ export const bookingsApi = {
   confirm: (id: string) => api.post(`/bookings/${id}/confirm`),
   cancel: (id: string, reason: string) => api.post(`/bookings/${id}/cancel`, { reason }),
   submitQuote: (id: string, data: any) => api.post(`/bookings/${id}/quote`, data),
+  getMessages: (id: string) => api.get(`/bookings/${id}/messages`),
+  sendMessage: (id: string, body: string) => api.post(`/bookings/${id}/messages`, { body }),
 };
 
 export const attendeesApi = {

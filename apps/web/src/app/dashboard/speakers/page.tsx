@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
 import { speakersApi, eventsApi, aiApi } from '@/lib/api';
 import { speakerProgress } from '@/lib/utils';
 import toast from 'react-hot-toast';
@@ -425,11 +426,6 @@ function SpeakerModal({ eventId, speaker, onClose, onSave }: any) {
       setValue('bio', res.data.description || '');
       toast.success('✨ AI bio generated!');
     } finally { setIsAiLoading(false); }
-  }
-
-  function useForm(opts?: any) {
-    const { useForm: uf } = require('react-hook-form');
-    return uf(opts);
   }
 
   return (

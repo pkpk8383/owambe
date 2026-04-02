@@ -1,0 +1,272 @@
+import { Router } from 'express';
+import { prisma } from '../database/client';
+import { authenticate } from '../middleware/authenticate';
+import { requireRole } from '../middleware/requireRole';
+import { sendEmail } from '../services/email.service';
+import { logger } from '../utils/logger';
+
+export const adminRouter = Router();
+adminRouter.use(authenticate, requireRole('ADMIN'));
+
+// ─── PLATFORM STATS ──────────────────────────────────
+adminRouter.get('/platform/stats', async (req, res, next) => {
+  try {
+    const [totalUsers, totalVendors, pendingVendors, totalEvents, totalBookings, gmv] =
+      await Promise.all([
+        prisma.user.count(),
+        prisma.vendor.count({ where: { status: 'VERIFIED' } }),
+        prisma.vendor.count({ where: { status: { in: ['PENDING', 'IN_REVIEW'] } } }),
+        prisma.event.count(),
+        prisma.booking.count({ where: { status: 'CONFIRMED' } }),
+        prisma.booking.aggregate({
+          where: { status: 'COMPLETED' },
+          _sum: { totalAmount: true, commissionAmount: true },
+        }),
+      ]);
+
+    res.json({
+      success: true,
+      stats: {
+        totalUsers,
+        totalVendors,
+        pendingVendors,
+        totalEvents,
+        totalBookings,
+        totalGMV: Number(gmv._sum.totalAmount || 0),
+        totalCommission: Number(gmv._sum.commissionAmount || 0),
+      },
+    });
+  } catch (err) { next(err); }
+});
+
+// ─── VENDOR VERIFICATION ─────────────────────────────
+adminRouter.get('/vendors/pending', async (req, res, next) => {
+  try {
+    const vendors = await prisma.vendor.findMany({
+      where: { status: { in: ['PENDING', 'IN_REVIEW'] } },
+      include: {
+        user: { select: { email: true, firstName: true, lastName: true, createdAt: true } },
+        portfolioItems: { take: 3 },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+    res.json({ success: true, vendors });
+  } catch (err) { next(err); }
+});
+
+adminRouter.put('/vendors/:id/verify', async (req, res, next) => {
+  try {
+    const vendor = await prisma.vendor.update({
+      where: { id: req.params.id },
+      data: { status: 'VERIFIED', verifiedAt: new Date() },
+      include: { user: true },
+    });
+
+    // Notify vendor
+    await sendEmail({
+      to: vendor.user.email,
+      subject: '✅ Your Owambe profile is now live!',
+      template: 'vendor-verified',
+      data: {
+        firstName: vendor.user.firstName,
+        businessName: vendor.businessName,
+        profileUrl: `${process.env.NEXT_PUBLIC_APP_URL}/vendors/${vendor.slug}`,
+      },
+    });
+
+    logger.info(`Vendor verified: ${vendor.id} — ${vendor.businessName}`);
+    res.json({ success: true, vendor });
+  } catch (err) { next(err); }
+});
+
+adminRouter.put('/vendors/:id/reject', async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+    const vendor = await prisma.vendor.update({
+      where: { id: req.params.id },
+      data: { status: 'REJECTED', rejectionReason: reason },
+      include: { user: true },
+    });
+
+    await sendEmail({
+      to: vendor.user.email,
+      subject: 'Owambe profile review update',
+      template: 'vendor-rejected',
+      data: {
+        firstName: vendor.user.firstName,
+        businessName: vendor.businessName,
+        reason,
+        resubmitUrl: `${process.env.NEXT_PUBLIC_APP_URL}/vendor/settings`,
+      },
+    });
+
+    res.json({ success: true, vendor });
+  } catch (err) { next(err); }
+});
+
+// ─── USER MANAGEMENT ─────────────────────────────────
+adminRouter.get('/users', async (req, res, next) => {
+  try {
+    const { role, page = 1, limit = 50, search } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+    const where: any = {};
+    if (role) where.role = role;
+    if (search) {
+      where.OR = [
+        { email: { contains: String(search), mode: 'insensitive' } },
+        { firstName: { contains: String(search), mode: 'insensitive' } },
+        { lastName: { contains: String(search), mode: 'insensitive' } },
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true, email: true, firstName: true, lastName: true,
+          role: true, isActive: true, isEmailVerified: true,
+          createdAt: true, lastLoginAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: Number(limit),
+      }),
+      prisma.user.count({ where }),
+    ]);
+    res.json({ success: true, users, total, page: Number(page) });
+  } catch (err) { next(err); }
+});
+
+adminRouter.put('/users/:id/suspend', async (req, res, next) => {
+  try {
+    const user = await prisma.user.update({
+      where: { id: req.params.id },
+      data: { isActive: false },
+    });
+    logger.info(`User suspended: ${user.email}`);
+    res.json({ success: true, message: `User ${user.email} suspended` });
+  } catch (err) { next(err); }
+});
+
+adminRouter.put('/users/:id/reinstate', async (req, res, next) => {
+  try {
+    const user = await prisma.user.update({
+      where: { id: req.params.id },
+      data: { isActive: true },
+    });
+    res.json({ success: true, message: `User ${user.email} reinstated` });
+  } catch (err) { next(err); }
+});
+
+// ─── BOOKINGS / DISPUTES ─────────────────────────────
+adminRouter.get('/bookings', async (req, res, next) => {
+  try {
+    const { status, page = 1, limit = 50 } = req.query;
+    const where: any = {};
+    if (status) where.status = status;
+
+    const [bookings, total] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        include: {
+          vendor: { select: { businessName: true, category: true } },
+          planner: { include: { user: { select: { email: true, firstName: true } } } },
+          consumer: { include: { user: { select: { email: true, firstName: true } } } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (Number(page) - 1) * Number(limit),
+        take: Number(limit),
+      }),
+      prisma.booking.count({ where }),
+    ]);
+    res.json({ success: true, bookings, total });
+  } catch (err) { next(err); }
+});
+
+adminRouter.post('/bookings/:id/refund', async (req, res, next) => {
+  try {
+    const { amount, reason } = req.body;
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!booking) return res.status(404).json({ success: false, error: 'Booking not found' });
+
+    const { initiateRefund } = await import('../services/paystack.service');
+    if (booking.paystackDepositRef) {
+      await initiateRefund(booking.paystackDepositRef, amount);
+    }
+
+    await prisma.booking.update({
+      where: { id: req.params.id },
+      data: {
+        paymentStatus: amount ? 'PARTIALLY_REFUNDED' : 'REFUNDED',
+        cancellationReason: reason,
+      },
+    });
+
+    logger.info(`Admin refund issued: booking ${req.params.id} — ₦${amount || 'full'}`);
+    res.json({ success: true, message: 'Refund initiated' });
+  } catch (err) { next(err); }
+});
+
+// ─── COMMISSION MANAGEMENT ────────────────────────────
+adminRouter.put('/vendors/:id/commission', async (req, res, next) => {
+  try {
+    const { rate } = req.body;
+    const vendor = await prisma.vendor.update({
+      where: { id: req.params.id },
+      data: { commissionRate: rate },
+    });
+    res.json({ success: true, vendor });
+  } catch (err) { next(err); }
+});
+
+// ─── FEATURED LISTINGS ────────────────────────────────
+adminRouter.put('/vendors/:id/feature', async (req, res, next) => {
+  try {
+    const { days = 30 } = req.body;
+    const featuredUntil = new Date();
+    featuredUntil.setDate(featuredUntil.getDate() + days);
+
+    const vendor = await prisma.vendor.update({
+      where: { id: req.params.id },
+      data: { isFeatured: true, featuredUntil },
+    });
+    res.json({ success: true, vendor });
+  } catch (err) { next(err); }
+});
+
+adminRouter.put('/vendors/:id/unfeature', async (req, res, next) => {
+  try {
+    const vendor = await prisma.vendor.update({
+      where: { id: req.params.id },
+      data: { isFeatured: false, featuredUntil: null },
+    });
+    res.json({ success: true, vendor });
+  } catch (err) { next(err); }
+});
+
+// ─── REVIEWS MODERATION ──────────────────────────────
+adminRouter.get('/reviews/flagged', async (req, res, next) => {
+  try {
+    // In production: add a `isFlagged` field to reviews
+    const reviews = await prisma.review.findMany({
+      where: { rating: { lte: 2 } },
+      include: {
+        vendor: { select: { businessName: true } },
+        booking: { select: { eventDate: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    res.json({ success: true, reviews });
+  } catch (err) { next(err); }
+});
+
+adminRouter.delete('/reviews/:id', async (req, res, next) => {
+  try {
+    await prisma.review.delete({ where: { id: req.params.id } });
+    logger.info(`Review deleted by admin: ${req.params.id}`);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});

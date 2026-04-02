@@ -241,4 +241,3 @@ Events to enable: `charge.success`, `transfer.success`, `refund.processed`
 ---
 
 Built by the Owambe team · Lagos, Nigeria 🇳🇬
-# owambe

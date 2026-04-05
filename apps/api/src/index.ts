@@ -27,6 +27,10 @@ import { aiRouter } from './routes/ai';
 import { adminRouter } from './routes/admin';
 import { notificationsRouter } from './routes/notifications';
 import { messagesRouter } from './routes/messages';
+import { tenantsRouter } from './routes/tenants';
+import { promosRouter } from './routes/promos';
+import { waitlistRouter } from './routes/waitlist';
+import { ticketsRouter } from './routes/tickets';
 
 import { initSocket } from './socket';
 import { logger } from './utils/logger';
@@ -84,6 +88,10 @@ app.use('/api/ai', aiRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api', messagesRouter);
+app.use('/api/tenants', tenantsRouter);
+app.use('/api/promos', promosRouter);
+app.use('/api/waitlist', waitlistRouter);
+app.use('/api/tickets', ticketsRouter);
 
 app.use((_req, res) => { res.status(404).json({ success: false, error: 'Route not found' }); });
 app.use(errorHandler);

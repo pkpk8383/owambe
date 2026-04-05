@@ -197,8 +197,40 @@ model Planner {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   events       Event[]
   bookings     Booking[]
+  tenants      Tenant[]
 
   @@map("planners")
+}
+
+// ─── WHITE-LABEL TENANT ──────────────────────────────
+model Tenant {
+  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  plannerId       String   @db.Uuid
+  subdomain       String   @unique
+  customDomain    String?  @unique
+  name            String
+  tagline         String?
+  logoUrl         String?
+  faviconUrl      String?
+  primaryColor    String   @default("#2D6A4F")
+  accentColor     String   @default("#E76F2A")
+  bgColor         String   @default("#FDFAF4")
+  fontFamily      String   @default("Inter")
+  footerText      String?
+  socialLinks     Json?
+  metaTitle       String?
+  metaDescription String?
+  metaImage       String?
+  isActive        Boolean  @default(true)
+  allowPublicReg  Boolean  @default(true)
+  requireApproval Boolean  @default(false)
+  customCss       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  planner  Planner @relation(fields: [plannerId], references: [id], onDelete: Cascade)
+
+  @@map("tenants")
 }
 
 // ─── VENDOR ──────────────────────────────────────────

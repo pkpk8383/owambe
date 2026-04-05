@@ -118,6 +118,7 @@ export const vendorsApi = {
 
 export const bookingsApi = {
   list: (params?: any) => api.get('/bookings', { params }),
+  get: (id: string) => api.get(`/bookings/${id}`),
   createInstant: (data: any) => api.post('/bookings/instant', data),
   createRfq: (data: any) => api.post('/bookings/rfq', data),
   confirm: (id: string) => api.post(`/bookings/${id}/confirm`),
@@ -125,6 +126,30 @@ export const bookingsApi = {
   submitQuote: (id: string, data: any) => api.post(`/bookings/${id}/quote`, data),
   getMessages: (id: string) => api.get(`/bookings/${id}/messages`),
   sendMessage: (id: string, body: string) => api.post(`/bookings/${id}/messages`, { body }),
+};
+
+export const ticketsApi = {
+  list: (eventId: string) => api.get(`/tickets/event/${eventId}`),
+  create: (eventId: string, data: any) => api.post(`/tickets/event/${eventId}`, data),
+  update: (id: string, data: any) => api.put(`/tickets/${id}`, data),
+  delete: (id: string) => api.delete(`/tickets/${id}`),
+  setStatus: (id: string, status: string) => api.patch(`/tickets/${id}/status`, { status }),
+};
+
+export const promosApi = {
+  list: (eventId: string) => api.get(`/promos/event/${eventId}`),
+  create: (eventId: string, data: any) => api.post(`/promos/event/${eventId}`, data),
+  validate: (code: string, eventId: string, ticketPrice?: number) =>
+    api.post('/promos/validate', { code, eventId, ticketPrice }),
+  delete: (id: string) => api.delete(`/promos/${id}`),
+  update: (id: string, data: any) => api.put(`/promos/${id}`, data),
+};
+
+export const waitlistApi = {
+  join: (data: any) => api.post('/waitlist/join', data),
+  list: (eventId: string) => api.get(`/waitlist/event/${eventId}`),
+  notify: (eventId: string, count?: number) => api.post(`/waitlist/notify/${eventId}`, { count }),
+  remove: (id: string) => api.delete(`/waitlist/${id}`),
 };
 
 export const attendeesApi = {

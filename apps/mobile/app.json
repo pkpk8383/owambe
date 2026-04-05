@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "Owambe",
+    "slug": "owambe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2D6A4F"
+    },
+    "scheme": "owambe",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.owambe.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Owambe uses your camera to scan QR tickets at events.",
+        "NSLocationWhenInUseUsageDescription": "Owambe uses your location to find nearby venues and vendors.",
+        "NSPhotoLibraryUsageDescription": "Owambe uses your photo library to upload portfolio and event images."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#2D6A4F"
+      },
+      "package": "com.owambe.app",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-location",
+      [
+        "expo-camera",
+        { "cameraPermission": "Owambe uses your camera to scan event QR codes." }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#2D6A4F",
+          "sounds": []
+        }
+      ],
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "owambe-expo-project-id"
+      }
+    }
+  }
+}

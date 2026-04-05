@@ -90,6 +90,8 @@ export const authApi = {
   login: (email: string, password: string) => api.post('/auth/login', { email, password }),
   logout: () => api.post('/auth/logout'),
   me: () => api.get('/auth/me'),
+  forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token: string, password: string) => api.post(`/auth/reset-password/${token}`, { password }),
 };
 
 export const eventsApi = {
@@ -109,6 +111,7 @@ export const vendorsApi = {
   getMyProfile: () => api.get('/vendors/me'),
   create: (data: any) => api.post('/vendors/me', data),
   update: (data: any) => api.put('/vendors/me', data),
+  updateMyProfile: (data: any) => api.put('/vendors/me', data),
   setupBank: (data: any) => api.post('/vendors/me/bank-account', data),
   getAvailability: (vendorId: string, params: any) => api.get(`/vendors/${vendorId}/availability`, { params }),
   setAvailability: (dates: any[]) => api.put('/vendors/me/availability', { dates }),
@@ -184,6 +187,7 @@ export const analyticsApi = {
   eventStats: (eventId: string) => api.get(`/analytics/events/${eventId}`),
   checkInLive: (eventId: string) => api.get(`/analytics/events/${eventId}/checkin-live`),
   vendorRevenue: () => api.get('/analytics/vendor/revenue'),
+  marketIntelligence: () => api.get('/analytics/vendor/market'),
 };
 
 export const aiApi = {
@@ -191,6 +195,47 @@ export const aiApi = {
   planIntake: (message: string, conversationHistory: any[]) =>
     api.post('/ai/plan/intake', { message, conversationHistory }),
   generatePlan: (data: any) => api.post('/ai/plan/generate', data),
+  getPlans: () => api.get('/ai/plans'),
+};
+
+export const contractsApi = {
+  list: (params?: any) => api.get('/contracts', { params }),
+  get: (id: string) => api.get(`/contracts/${id}`),
+  create: (data: any) => api.post('/contracts', data),
+  update: (id: string, data: any) => api.put(`/contracts/${id}`, data),
+  send: (id: string) => api.post(`/contracts/${id}/send`),
+  void: (id: string, reason: string) => api.post(`/contracts/${id}/void`, { reason }),
+  resend: (id: string, role: string) => api.post(`/contracts/${id}/resend/${role}`),
+  fromBooking: (bookingId: string, data?: any) => api.post(`/contracts/from-booking/${bookingId}`, data || {}),
+  downloadPdfUrl: (id: string) => `/api/contracts/${id}/pdf`,
+};
+
+
+export const crmApi = {
+  list: () => api.get('/crm'),
+  getOAuthUrl: (provider: string) => api.get(`/crm/oauth/${provider}/url`),
+  connect: (data: { provider: string; accessToken: string; instanceUrl?: string; portalId?: string; refreshToken?: string }) =>
+    api.post('/crm/connect', data),
+  update: (id: string, data: any) => api.put(`/crm/${id}`, data),
+  disconnect: (id: string) => api.delete(`/crm/${id}`),
+  sync: (id: string) => api.post(`/crm/${id}/sync`),
+  test: (id: string) => api.post(`/crm/${id}/test`),
+  logs: (id: string, params?: any) => api.get(`/crm/${id}/logs`, { params }),
+  metadata: (id: string) => api.get(`/crm/${id}/metadata`),
+};
+
+
+export const instalmentApi = {
+  preview: (data: { totalAmount: number; instalmentCount: 3 | 6; startDate?: string }) =>
+    api.post('/instalments/preview', data),
+  list: () => api.get('/instalments'),
+  get: (id: string) => api.get(`/instalments/${id}`),
+  create: (data: { bookingId: string; instalmentCount: 3 | 6; startDate?: string }) =>
+    api.post('/instalments', data),
+  cancel: (id: string, reason?: string) =>
+    api.post(`/instalments/${id}/cancel`, { reason }),
+  retry: (planId: string, paymentId: string) =>
+    api.post(`/instalments/${planId}/retry/${paymentId}`),
 };
 
 export const uploadApi = {

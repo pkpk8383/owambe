@@ -1,7 +1,10 @@
 import sgMail from '@sendgrid/mail';
 import { logger } from '../utils/logger';
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+const sgKey = process.env.SENDGRID_API_KEY;
+if (sgKey) {
+  sgMail.setApiKey(sgKey);
+}
 
 interface EmailOptions {
   to: string;
@@ -173,6 +176,148 @@ const templates: Record<string, (data: any) => string> = {
           <p style="margin:4px 0">📋 Reference: <strong>${d.reference}</strong></p>
         </div>
         <p style="color:#6B7280;font-size:13px">Your deposit is held securely in escrow. The vendor receives it 24 hours after your event completes successfully.</p>
+      </div>
+    </div>`,
+
+  'contract-sign-request': (d) => `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:#1A1612;padding:28px 32px;border-radius:12px 12px 0 0">
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">owambe.com · Document Signing</div>
+        <h1 style="color:#fff;margin:0;font-size:22px">Signature Required</h1>
+      </div>
+      <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
+        <p style="color:#1A1612;font-size:15px;margin-bottom:24px">Hi ${d.firstName},</p>
+        <p style="color:#3D3730;line-height:1.6;margin-bottom:24px">
+          You have been sent a contract to review and sign. Please read it carefully and sign by the deadline below.
+        </p>
+        <div style="background:#F5F2EB;border-radius:10px;padding:20px;margin-bottom:24px">
+          <div style="font-size:11px;color:#9A9080;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Contract Details</div>
+          <div style="font-size:18px;font-weight:700;color:#1A1612;margin-bottom:8px">${d.contractTitle}</div>
+          <div style="font-size:13px;color:#9A9080;font-family:monospace">${d.reference}</div>
+          ${d.eventDate ? `<div style="font-size:13px;color:#3D3730;margin-top:8px">📅 Event: ${d.eventDate}</div>` : ''}
+          ${d.totalAmount ? `<div style="font-size:13px;color:#3D3730;margin-top:4px">💰 Amount: ${d.totalAmount}</div>` : ''}
+          <div style="font-size:13px;color:#E63946;margin-top:8px;font-weight:600">⏰ Sign by: ${d.expiresAt}</div>
+        </div>
+        <div style="text-align:center;margin-bottom:24px">
+          <a href="${d.signingUrl}" style="background:#E76F2A;color:#fff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block">
+            Review &amp; Sign Contract →
+          </a>
+        </div>
+        <div style="background:#EEF7F2;border-radius:8px;padding:14px;font-size:12px;color:#2D6A4F">
+          🔐 This link is unique to you. Do not share it. Your signature, IP address, and timestamp will be recorded as legal evidence under Nigerian law.
+        </div>
+        <p style="color:#9A9080;font-size:11px;margin-top:20px;text-align:center">
+          If the button above doesn't work, copy this link into your browser:<br>
+          <span style="font-family:monospace;color:#2D6A4F;word-break:break-all">${d.signingUrl}</span>
+        </p>
+      </div>
+    </div>`,
+
+  'contract-signed-confirmation': (d) => `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:#059669;padding:28px 32px;border-radius:12px 12px 0 0;text-align:center">
+        <div style="font-size:36px;margin-bottom:8px">✅</div>
+        <h1 style="color:#fff;margin:0;font-size:20px">${d.allSigned ? 'Contract Fully Executed' : 'Signature Received'}</h1>
+      </div>
+      <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
+        <p>Hi ${d.firstName},</p>
+        ${d.allSigned
+          ? `<p style="color:#3D3730;line-height:1.6">All parties have signed <strong>${d.contractTitle}</strong> (${d.reference}). This contract is now fully executed and legally binding.</p>`
+          : `<p style="color:#3D3730;line-height:1.6">Your signature on <strong>${d.contractTitle}</strong> (${d.reference}) has been recorded. Waiting for the other party to sign.</p>`}
+        <div style="background:#F5F2EB;border-radius:8px;padding:16px;margin:20px 0;font-size:12px;color:#9A9080">
+          <div>Signed at: <strong style="color:#1A1612">${d.signedAt}</strong></div>
+          <div style="margin-top:4px">IP Address: <strong style="color:#1A1612;font-family:monospace">${d.ipAddress}</strong></div>
+          <div style="margin-top:4px">Reference: <strong style="color:#1A1612;font-family:monospace">${d.reference}</strong></div>
+        </div>
+        ${d.allSigned ? `
+        <div style="text-align:center;margin:24px 0">
+          <a href="${d.downloadUrl}" style="background:#2D6A4F;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block">
+            Download Executed Contract PDF
+          </a>
+        </div>` : ''}
+        <p style="color:#9A9080;font-size:12px;line-height:1.6">
+          Your signature is legally binding under the Nigerian Communications Act. Owambe maintains a tamper-evident audit trail of this contract for 7 years.
+        </p>
+      </div>
+    </div>`,
+
+
+  'instalment-paid': (d) => `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:#2D6A4F;padding:28px 32px;border-radius:12px 12px 0 0;text-align:center">
+        <div style="font-size:40px;margin-bottom:8px">✅</div>
+        <h1 style="color:#fff;margin:0;font-size:20px">Instalment ${d.instalmentNumber} Paid</h1>
+      </div>
+      <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
+        <p>Your payment for instalment ${d.instalmentNumber} of ${d.totalInstalments} has been received.</p>
+        <div style="background:#EEF7F2;border-radius:8px;padding:16px;margin:16px 0">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="color:#9A9080">Amount paid</span>
+            <strong>${d.amountPaid}</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="color:#9A9080">Total paid to date</span>
+            <strong>${d.totalPaid}</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:#9A9080">Grand total</span>
+            <strong>${d.grandTotal}</strong>
+          </div>
+        </div>
+        <p style="color:#9A9080;font-size:13px">
+          Next payment: <strong>${d.nextDueDate}</strong>
+        </p>
+        <p style="color:#9A9080;font-size:12px">Reference: ${d.reference}</p>
+      </div>
+    </div>`,
+
+  'instalment-failed': (d) => `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:#E63946;padding:28px 32px;border-radius:12px 12px 0 0;text-align:center">
+        <div style="font-size:40px;margin-bottom:8px">⚠️</div>
+        <h1 style="color:#fff;margin:0;font-size:20px">Payment Failed</h1>
+      </div>
+      <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
+        <p>We were unable to collect instalment ${d.instalmentNumber} of <strong>${d.amount}</strong>.</p>
+        <p style="color:#3D3730">Please update your payment method or retry the payment to keep your plan active.</p>
+        <div style="text-align:center;margin:24px 0">
+          <a href="${d.retryUrl}" style="background:#E76F2A;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">
+            Retry Payment →
+          </a>
+        </div>
+        <p style="color:#9A9080;font-size:12px">Reference: ${d.reference}</p>
+      </div>
+    </div>`,
+
+  'instalment-reminder': (d) => `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:#D97706;padding:24px 32px;border-radius:12px 12px 0 0">
+        <h1 style="color:#fff;margin:0;font-size:20px">⏰ Payment Due in 3 Days</h1>
+      </div>
+      <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
+        <p>Your instalment ${d.instalmentNumber} of <strong>${d.amount}</strong> is due on <strong>${d.dueDate}</strong>.</p>
+        <p style="color:#3D3730">Your saved card will be charged automatically. No action needed unless you need to update your card details.</p>
+        <p style="color:#9A9080;font-size:12px">Reference: ${d.reference}</p>
+      </div>
+    </div>`,
+
+  'contract-reminder': (d) => `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:#D97706;padding:24px 32px;border-radius:12px 12px 0 0">
+        <h1 style="color:#fff;margin:0;font-size:20px">⏰ Reminder: Signature Required</h1>
+      </div>
+      <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
+        <p>Hi ${d.firstName},</p>
+        <p style="color:#3D3730;line-height:1.6">This is a reminder that <strong>${d.contractTitle}</strong> is still awaiting your signature.</p>
+        <div style="background:#FEF3C7;border-radius:8px;padding:14px;margin:16px 0;font-size:13px;color:#92400E">
+          ⚠️ This contract expires on <strong>${d.expiresAt}</strong>. Please sign before then to avoid it expiring.
+        </div>
+        <div style="text-align:center;margin:24px 0">
+          <a href="${d.signingUrl}" style="background:#E76F2A;color:#fff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block">
+            Sign Now →
+          </a>
+        </div>
+        <p style="color:#9A9080;font-size:11px;text-align:center;font-family:monospace;word-break:break-all">${d.signingUrl}</p>
       </div>
     </div>`,
 };

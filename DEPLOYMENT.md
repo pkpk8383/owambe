@@ -230,3 +230,82 @@ curl -X POST https://api.owambe.com/api/payments/webhook/paystack \
 | AI generation failing | Check OpenAI API key has credits and `gpt-4o` access |
 | JWT errors | Ensure `JWT_SECRET` is at least 32 characters |
 | PostGIS not found | Run `CREATE EXTENSION IF NOT EXISTS postgis` on Railway Postgres |
+
+---
+
+## Step 9 — Contract & E-Signature System
+
+### Run the contracts migration
+After running `prisma migrate deploy`, also run the manual migration for contracts + tenants (white-label):
+
+```bash
+# Connect to Railway Postgres
+railway run psql $DATABASE_URL -f apps/api/prisma/migrations/add_contracts_and_tenants.sql
+```
+
+This creates:
+- `contracts` table — stores contract templates, status, PDF URL
+- `contract_signatures` table — per-signer with unique token, IP, timestamp
+- `tenants` table — white-label portal config (if not already created by Prisma)
+
+### Signing link URL
+Signing links are emailed as:
+```
+https://owambe.com/contracts/sign/{token}
+```
+Ensure `NEXT_PUBLIC_APP_URL=https://owambe.com` is set on Vercel.
+
+### PDF generation
+PDFs are generated server-side using `pdf-lib` (no external service). On full execution (both parties signed), the PDF is generated and emailed. To also store in S3, uncomment the upload block in `routes/contracts.ts → generateAndStorePdf()`.
+
+### Contract flow
+1. Planner creates from `/dashboard/contracts/new` or auto-generates from a confirmed booking
+2. Click "Send" — unique signing tokens emailed to both parties
+3. Each party opens their link at `/contracts/sign/{token}` — no login required
+4. Draws or types signature → agrees → submits
+5. On full execution: PDF generated, emailed to both parties, status → FULLY_SIGNED
+
+---
+
+## Step 10 — White-label Portal
+
+### Deploy whitelabel app separately
+```bash
+cd apps/whitelabel
+vercel --prod
+```
+
+### Add wildcard domain in Vercel
+In Vercel Dashboard → your whitelabel project → Settings → Domains:
+```
+*.owambe.com
+```
+
+### Promote a planner to Scale plan
+```sql
+UPDATE planners SET plan = 'SCALE' WHERE id = '<planner-uuid>';
+```
+
+### Custom domain setup (for agency clients)
+They add a CNAME at their DNS:
+```
+Type: CNAME   Name: events   Value: techfest.owambe.com
+```
+Then update their portal: `PUT /api/tenants/me { customDomain: "events.techlagos.com" }`
+
+---
+
+## Common Issues (updated)
+
+| Issue | Fix |
+|---|---|
+| `DATABASE_URL` connection failed | Check Railway Postgres; verify connection string format |
+| Paystack webhook 400 | Check `PAYSTACK_WEBHOOK_SECRET` matches Paystack dashboard |
+| Image uploads failing | Verify AWS credentials and S3 bucket CORS policy |
+| AI generation failing | Check OpenAI API key has credits and `gpt-4o` access |
+| JWT errors | Ensure `JWT_SECRET` is at least 32 characters |
+| PostGIS not found | Run `CREATE EXTENSION IF NOT EXISTS postgis` on Railway Postgres |
+| Contract signing 404 | Check `NEXT_PUBLIC_APP_URL` is set; signing links use this base URL |
+| PDF blank/corrupt | Ensure `pdf-lib@^1.17.1` is installed in `apps/api` |
+| White-label portal 404 | Wildcard `*.owambe.com` must be added in Vercel dashboard |
+| Scale plan gate | `UPDATE planners SET plan = 'SCALE' WHERE id = '...'` in Railway Postgres |

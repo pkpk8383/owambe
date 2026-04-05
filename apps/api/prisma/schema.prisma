@@ -85,6 +85,21 @@ enum PaymentStatus {
   FAILED
 }
 
+enum ContractStatus {
+  DRAFT
+  SENT
+  PARTIALLY_SIGNED
+  FULLY_SIGNED
+  VOID
+  EXPIRED
+}
+
+enum SignerRole {
+  PLANNER
+  VENDOR
+  WITNESS
+}
+
 enum QuoteStatus {
   PENDING
   SENT
@@ -198,6 +213,9 @@ model Planner {
   events       Event[]
   bookings     Booking[]
   tenants      Tenant[]
+  contracts    Contract[]
+  crmConnections CrmConnection[]
+  instalmentPlans InstalmentPlan[]
 
   @@map("planners")
 }
@@ -275,6 +293,10 @@ model Vendor {
   launchBonusExpiresAt DateTime?
   verifiedAt          DateTime?
   rejectionReason     String?
+  phone               String?
+  isPhoneVerified     Boolean        @default(false)
+  website             String?
+  instagram           String?
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
 
@@ -285,6 +307,7 @@ model Vendor {
   reviews             Review[]
   packages            VendorPackage[]
   quotes              Quote[]
+  contracts           Contract[]
 
   @@index([category])
   @@index([status])
@@ -360,6 +383,8 @@ model Consumer {
   bookings Booking[]
   aiPlans  AiEventPlan[]
 
+  instalmentPlans InstalmentPlan[]
+
   @@map("consumers")
 }
 
@@ -413,6 +438,10 @@ model TicketType {
   status       TicketStatus @default(ACTIVE)
   saleStartsAt DateTime?
   saleEndsAt   DateTime?
+  salesEndDate DateTime?    // alias kept for backward compat
+  minPerOrder  Int          @default(1)
+  maxPerOrder  Int          @default(10)
+  benefits     String[]     @default([])
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
@@ -581,6 +610,8 @@ model Booking {
   cancellationReason  String?
   cancelledAt         DateTime?
   completedAt         DateTime?
+  bookerEmail      String?
+  bookerName       String?
   notes            String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -598,6 +629,10 @@ model Booking {
   @@index([consumerId])
   @@index([status])
   @@index([eventDate])
+
+  contracts Contract[]
+  instalmentPlans InstalmentPlan[]
+
   @@map("bookings")
 }
 
@@ -725,3 +760,238 @@ model Waitlist {
   @@index([eventId])
   @@map("waitlist")
 }
+
+// ─── CONTRACTS ───────────────────────────────────────
+model Contract {
+  id              String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  reference       String         @unique
+  bookingId       String?        @db.Uuid
+  plannerId       String         @db.Uuid
+  vendorId        String         @db.Uuid
+  title           String
+  templateType    String         // SERVICE_AGREEMENT | VENUE_HIRE | PHOTOGRAPHY | CUSTOM
+  status          ContractStatus @default(DRAFT)
+  bodyHtml        String         // The contract body (HTML/rich text)
+  pdfUrl          String?        // Generated PDF stored in S3
+  totalAmount     Decimal?       @db.Decimal(12, 2)
+  currency        String         @default("NGN")
+  eventDate       DateTime?
+  eventVenue      String?
+  expiresAt       DateTime?
+  voidedAt        DateTime?
+  voidReason      String?
+  sentAt          DateTime?
+  fullySignedAt   DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  planner    Planner            @relation(fields: [plannerId], references: [id])
+  vendor     Vendor             @relation(fields: [vendorId], references: [id])
+  booking    Booking?           @relation(fields: [bookingId], references: [id])
+  signatures ContractSignature[]
+
+  @@map("contracts")
+}
+
+model ContractSignature {
+  id           String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  contractId   String     @db.Uuid
+  signerRole   SignerRole
+  signerName   String
+  signerEmail  String
+  signedAt     DateTime?
+  signingToken String     @unique  // Secure token for signing link
+  tokenExpiry  DateTime
+  ipAddress    String?
+  userAgent    String?
+  signatureData String?  // Base64 drawn signature or typed name
+  isSigned     Boolean  @default(false)
+  viewedAt     DateTime?
+  reminderSentAt DateTime?
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@map("contract_signatures")
+}
+
+// ─── CRM INTEGRATION ─────────────────────────────────
+enum CrmProvider {
+  SALESFORCE
+  HUBSPOT
+}
+
+enum SyncStatus {
+  IDLE
+  SYNCING
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
+enum SyncDirection {
+  PUSH        // Owambe → CRM
+  PULL        // CRM → Owambe
+  BIDIRECTIONAL
+}
+
+model CrmConnection {
+  id                String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  plannerId         String      @db.Uuid
+  provider          CrmProvider
+  isActive          Boolean     @default(true)
+
+  // OAuth tokens (encrypted at rest in production)
+  accessToken       String
+  refreshToken      String?
+  tokenExpiresAt    DateTime?
+  instanceUrl       String?     // Salesforce org URL e.g. https://myorg.my.salesforce.com
+  portalId          String?     // HubSpot portal/hub ID
+
+  // Sync configuration
+  syncDirection     SyncDirection @default(BIDIRECTIONAL)
+  syncAttendees     Boolean     @default(true)
+  syncBookings      Boolean     @default(true)
+  syncContacts      Boolean     @default(true)
+  autoSyncEnabled   Boolean     @default(true)
+  syncIntervalHours Int         @default(6)
+
+  // Field mapping (JSON): { owambeField: crmField }
+  attendeeFieldMap  Json        @default("{}")
+  bookingFieldMap   Json        @default("{}")
+
+  // CRM object IDs for tracking
+  crmContactOwnerId String?     // Assign synced contacts to this CRM user
+  crmPipelineId     String?     // HubSpot pipeline / SF opportunity stage
+
+  // State
+  lastSyncAt        DateTime?
+  lastSyncStatus    SyncStatus  @default(IDLE)
+  lastSyncError     String?
+  totalSynced       Int         @default(0)
+  totalErrors       Int         @default(0)
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  planner  Planner      @relation(fields: [plannerId], references: [id], onDelete: Cascade)
+  syncLogs CrmSyncLog[]
+
+  @@unique([plannerId, provider])
+  @@map("crm_connections")
+}
+
+model CrmSyncLog {
+  id              String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  connectionId    String        @db.Uuid
+  entityType      String        // "attendee" | "booking" | "contact"
+  entityId        String        // Owambe entity UUID
+  crmId           String?       // CRM record ID after sync
+  direction       SyncDirection
+  status          SyncStatus
+  errorMessage    String?
+  payload         Json?         // What was sent/received
+  durationMs      Int?
+  syncedAt        DateTime      @default(now())
+
+  connection CrmConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId])
+  @@index([entityType, entityId])
+  @@index([syncedAt])
+  @@map("crm_sync_logs")
+}
+
+// ─── INSTALMENT PAYMENT PLANS ────────────────────────
+enum InstalmentStatus {
+  ACTIVE       // Plan running, instalments being collected
+  COMPLETED    // All instalments paid
+  DEFAULTED    // Payment failed and not recovered
+  CANCELLED    // User cancelled
+  PAUSED       // Temporarily paused (e.g. card expired)
+}
+
+enum InstalmentPaymentStatus {
+  SCHEDULED    // Future payment, not yet due
+  PENDING      // Due soon (within 3 days)
+  PROCESSING   // Charge initiated
+  PAID         // Successfully collected
+  FAILED       // Charge failed
+  WAIVED       // Manually waived
+}
+
+model InstalmentPlan {
+  id                  String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  reference           String          @unique  // e.g. INST-XXXXX
+  bookingId           String          @db.Uuid
+  plannerId           String?         @db.Uuid
+  consumerId          String?         @db.Uuid
+
+  // Plan configuration
+  totalAmount         Decimal         @db.Decimal(12, 2)    // Full booking amount
+  instalmentCount     Int             // 3 or 6
+  instalmentAmount    Decimal         @db.Decimal(12, 2)    // Per instalment (may vary for first)
+  serviceFeeRate      Decimal         @default(3.5) @db.Decimal(5, 2) // % fee on top of total
+  serviceFeeAmount    Decimal         @db.Decimal(12, 2)   // Total fee charged
+  grandTotal          Decimal         @db.Decimal(12, 2)   // totalAmount + serviceFeeAmount
+  currency            String          @default("NGN")
+
+  // Paystack integration
+  paystackAuthCode    String?         // Reusable authorization code from first charge
+  paystackCustomerCode String?        // Paystack customer code
+  paystackEmail       String?         // Email for recurring charges
+
+  // Status tracking
+  status              InstalmentStatus @default(ACTIVE)
+  amountPaid          Decimal         @default(0) @db.Decimal(12, 2)
+  nextDueDate         DateTime?
+  cancelledAt         DateTime?
+  cancelReason        String?
+  completedAt         DateTime?
+  defaultedAt         DateTime?
+  failureCount        Int             @default(0)  // consecutive failures
+
+  // First instalment start date
+  startDate           DateTime        @default(now())
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  booking   Booking          @relation(fields: [bookingId], references: [id])
+  planner   Planner?         @relation(fields: [plannerId], references: [id])
+  consumer  Consumer?        @relation(fields: [consumerId], references: [id])
+  payments  InstalmentPayment[]
+
+  @@index([bookingId])
+  @@index([plannerId])
+  @@index([consumerId])
+  @@index([status])
+  @@index([nextDueDate])
+  @@map("instalment_plans")
+}
+
+model InstalmentPayment {
+  id                  String                  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  planId              String                  @db.Uuid
+  instalmentNumber    Int                     // 1 of 3, 2 of 3, etc.
+  amount              Decimal                 @db.Decimal(12, 2)
+  dueDate             DateTime
+  paidAt              DateTime?
+  status              InstalmentPaymentStatus @default(SCHEDULED)
+
+  // Paystack charge details
+  paystackReference   String?     @unique
+  paystackChargeId    String?
+  failureReason       String?
+  retryCount          Int         @default(0)
+
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  plan InstalmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@index([dueDate])
+  @@index([status])
+  @@map("instalment_payments")
+}
+

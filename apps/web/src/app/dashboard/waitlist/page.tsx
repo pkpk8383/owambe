@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { eventsApi } from '@/lib/api';
-import { api } from '@/lib/api';
+import { eventsApi, waitlistApi, promosApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, Bell, Loader2, Tag, Users, Clock } from 'lucide-react';
 
@@ -18,13 +17,13 @@ export default function WaitlistPage() {
 
   const { data: waitlistData } = useQuery({
     queryKey: ['waitlist', selectedEventId],
-    queryFn: () => api.get(`/attendees/waitlist/${selectedEventId}`).then(r => r.data).catch(() => ({ waitlist: [] })),
+    queryFn: () => waitlistApi.list(selectedEventId).then(r => r.data).catch(() => ({ waitlist: [] })),
     enabled: !!selectedEventId,
   });
 
   const { data: promoData } = useQuery({
     queryKey: ['promos', selectedEventId],
-    queryFn: () => api.get(`/events/${selectedEventId}/promos`).then(r => r.data).catch(() => ({ promoCodes: [] })),
+    queryFn: () => promosApi.list(selectedEventId).then(r => r.data).catch(() => ({ promoCodes: [] })),
     enabled: !!selectedEventId,
   });
 

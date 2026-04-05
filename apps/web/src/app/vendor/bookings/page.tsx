@@ -190,6 +190,12 @@ function BookingDetail({ booking, onConfirm, onCancel, onQuote, isConfirming, is
         <button className="btn-secondary w-full flex items-center justify-center gap-2">
           <MessageSquare size={14} /> Message Client
         </button>
+        {booking.status === 'CONFIRMED' && (
+          <a href={`/dashboard/contracts/new?bookingId=${booking.id}`}
+            className="btn-secondary w-full flex items-center justify-center gap-2 text-sm">
+            <FileSignature size={14} /> Generate Contract
+          </a>
+        )}
         {booking.status !== 'CANCELLED' && booking.status !== 'COMPLETED' && (
           showCancel ? (
             <div className="space-y-2">

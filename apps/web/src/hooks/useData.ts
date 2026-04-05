@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   eventsApi, attendeesApi, vendorsApi, bookingsApi,
-  analyticsApi, speakersApi, sponsorsApi, emailsApi, aiApi
+  analyticsApi, speakersApi, sponsorsApi, emailsApi, aiApi,
+  contractsApi, ticketsApi, promosApi, waitlistApi,
 } from '@/lib/api';
 
 // ─── EVENTS ──────────────────────────────────────────
@@ -110,5 +111,70 @@ export function useVendorRevenue() {
   return useQuery({
     queryKey: ['vendor-revenue'],
     queryFn: () => analyticsApi.vendorRevenue().then(r => r.data),
+  });
+}
+
+// ─── CONTRACTS ────────────────────────────────────────
+export function useContracts(params?: any) {
+  return useQuery({
+    queryKey: ['contracts', params],
+    queryFn: () => contractsApi.list(params).then(r => r.data),
+    staleTime: 30_000,
+  });
+}
+
+export function useContract(id: string) {
+  return useQuery({
+    queryKey: ['contract', id],
+    queryFn: () => contractsApi.get(id).then(r => r.data),
+    enabled: !!id,
+    refetchInterval: 15_000, // poll for signature updates
+  });
+}
+
+// ─── PROMO CODES ─────────────────────────────────────
+export function usePromos(eventId: string) {
+  return useQuery({
+    queryKey: ['promos', eventId],
+    queryFn: () => promosApi.list(eventId).then(r => r.data),
+    enabled: !!eventId,
+  });
+}
+
+// ─── WAITLIST ─────────────────────────────────────────
+export function useWaitlist(eventId: string) {
+  return useQuery({
+    queryKey: ['waitlist', eventId],
+    queryFn: () => waitlistApi.list(eventId).then(r => r.data),
+    enabled: !!eventId,
+    staleTime: 30_000,
+  });
+}
+
+// ─── TICKETS ─────────────────────────────────────────
+export function useTicketTypes(eventId: string) {
+  return useQuery({
+    queryKey: ['ticket-types', eventId],
+    queryFn: () => ticketsApi.list(eventId).then(r => r.data),
+    enabled: !!eventId,
+  });
+}
+
+// ─── SPONSORS ─────────────────────────────────────────
+export function useSponsors(eventId: string) {
+  return useQuery({
+    queryKey: ['sponsors', eventId],
+    queryFn: () => sponsorsApi.list(eventId).then(r => r.data),
+    enabled: !!eventId,
+  });
+}
+
+// ─── EMAIL CAMPAIGNS ─────────────────────────────────
+export function useEmailCampaigns(eventId: string) {
+  return useQuery({
+    queryKey: ['email-campaigns', eventId],
+    queryFn: () => emailsApi.list(eventId).then(r => r.data),
+    enabled: !!eventId,
+    staleTime: 60_000,
   });
 }

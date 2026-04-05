@@ -8,7 +8,7 @@ import { cn, initials } from '@/lib/utils';
 import {
   Zap, Calendar, Plus, Globe, Scan, Clock, Mail,
   Mic, MapPin, Trophy, Smartphone, BarChart2, CreditCard,
-  LogOut, Search, Bell, LayoutTemplate
+  LogOut, Search, Bell, LayoutTemplate, FileSignature, Link2, CreditCard
 } from 'lucide-react';
 
 const NAV_SECTIONS = [
@@ -47,6 +47,9 @@ const NAV_SECTIONS = [
     items: [
       { href: '/dashboard/mobile', icon: Smartphone, label: 'Attendee App' },
       { href: '/dashboard/analytics', icon: BarChart2, label: 'Analytics' },
+      { href: '/dashboard/contracts', icon: FileSignature, label: 'Contracts & E-Sign' },
+      { href: '/dashboard/crm', icon: Link2, label: 'CRM Sync', badge: 'Scale' },
+      { href: '/dashboard/instalments', icon: CreditCard, label: 'Instalment Plans' },
       { href: '/dashboard/whitelabel', icon: LayoutTemplate, label: 'White-label Portal', badge: 'Scale' },
       { href: '/dashboard/pricing', icon: CreditCard, label: 'Pricing' },
     ]

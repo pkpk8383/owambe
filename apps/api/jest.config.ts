@@ -7,7 +7,7 @@ const config: Config = {
   testMatch: ['**/__tests__/**/*.test.ts'],
   transform: { '^.+\\.ts$': 'ts-jest' },
   moduleNameMapper: { '^@/(.*)$': '<rootDir>/src/$1' },
-  setupFilesAfterFramework: [],
+  setupFilesAfterEnv: [],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',

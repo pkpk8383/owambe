@@ -7,12 +7,13 @@ import { useAuthStore } from '@/store/auth.store';
 import { api } from '@/lib/api';
 import { formatNGN, formatTimeAgo, VENDOR_CATEGORY_LABELS, VENDOR_CATEGORY_EMOJIS } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { TenantsAdminPanel } from '@/components/TenantsAdminPanel';
 import {
   CheckCircle, XCircle, AlertTriangle, Users, Store,
   DollarSign, BarChart2, Shield, Loader2, Eye, Bell
 } from 'lucide-react';
 
-const TABS = ['Overview', 'Vendor Queue', 'Users', 'Disputes', 'Commission'];
+const TABS = ['Overview', 'Vendor Queue', 'Users', 'Disputes', 'Commission', 'Portals', 'Contracts'];
 
 export default function AdminPage() {
   const { user } = useAuthStore();
@@ -59,6 +60,8 @@ export default function AdminPage() {
         {activeTab === 'Users' && <UsersTab />}
         {activeTab === 'Disputes' && <DisputesTab />}
         {activeTab === 'Commission' && <CommissionTab />}
+        {activeTab === 'Portals' && <TenantsAdminPanel />}
+        {activeTab === 'Contracts' && <ContractsAdminTab />}
       </div>
     </div>
   );
@@ -561,6 +564,107 @@ function CommissionTab() {
         <div className="px-5 py-3 border-t border-[var(--border)] bg-[var(--bg)] text-xs text-[var(--muted)]">
           💡 Launch bonus: New vendors pay 0% commission for first 90 days — automatically applied at registration.
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CONTRACTS ADMIN TAB ──────────────────────────────
+function ContractsAdminTab() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-contracts'],
+    queryFn: () => api.get('/contracts', { params: { limit: 100 } }).then(r => r.data),
+  });
+
+  const contracts = data?.contracts || [];
+
+  const STATUS_COLORS: Record<string, string> = {
+    DRAFT: 'badge-draft',
+    SENT: 'badge-upcoming',
+    PARTIALLY_SIGNED: 'badge-pending',
+    FULLY_SIGNED: 'badge-confirmed',
+    VOID: 'badge-cancelled',
+    EXPIRED: 'badge-draft',
+  };
+
+  const stats = {
+    total: contracts.length,
+    signed: contracts.filter((c: any) => c.status === 'FULLY_SIGNED').length,
+    pending: contracts.filter((c: any) => ['SENT', 'PARTIALLY_SIGNED'].includes(c.status)).length,
+    voided: contracts.filter((c: any) => c.status === 'VOID').length,
+  };
+
+  return (
+    <div className="animate-fade-up">
+      <div className="grid grid-cols-4 gap-3 mb-5">
+        {[
+          { label: 'Total Contracts', value: stats.total, color: '#9A9080' },
+          { label: 'Fully Signed', value: stats.signed, color: '#059669' },
+          { label: 'Awaiting Signature', value: stats.pending, color: '#D97706' },
+          { label: 'Voided', value: stats.voided, color: '#E63946' },
+        ].map(s => (
+          <div key={s.label} className="stat-card">
+            <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-xl" style={{ background: s.color }} />
+            <div className="stat-label">{s.label}</div>
+            <div className="stat-number">{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card overflow-hidden p-0">
+        <div className="px-5 py-3 border-b border-[var(--border)] flex items-center justify-between">
+          <span className="text-sm font-bold">All Contracts</span>
+          <span className="text-xs text-[var(--muted)]">{contracts.length} contracts</span>
+        </div>
+        {isLoading ? (
+          <div className="text-center py-8 text-[var(--muted)] text-sm">Loading...</div>
+        ) : contracts.length === 0 ? (
+          <div className="text-center py-8 text-[var(--muted)] text-sm">No contracts yet</div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="table-header">Contract</th>
+                <th className="table-header">Planner</th>
+                <th className="table-header">Vendor</th>
+                <th className="table-header">Amount</th>
+                <th className="table-header">Status</th>
+                <th className="table-header">Signed</th>
+                <th className="table-header">Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {contracts.map((c: any) => {
+                const signed = c.signatures?.filter((s: any) => s.isSigned).length ?? 0;
+                const total = c.signatures?.length ?? 0;
+                return (
+                  <tr key={c.id} className="table-row">
+                    <td className="table-cell">
+                      <div className="font-semibold text-sm" style={{ maxWidth: 200 }}>{c.title}</div>
+                      <div className="text-[10px] font-mono text-[var(--muted)]">{c.reference}</div>
+                    </td>
+                    <td className="table-cell text-sm text-[var(--muted)]">
+                      {c.planner?.user?.email}
+                    </td>
+                    <td className="table-cell text-sm">{c.vendor?.businessName}</td>
+                    <td className="table-cell text-sm font-semibold">
+                      {c.totalAmount ? `₦${Number(c.totalAmount).toLocaleString('en-NG')}` : '—'}
+                    </td>
+                    <td className="table-cell">
+                      <span className={STATUS_COLORS[c.status] || 'badge-draft'}>
+                        {c.status.replace(/_/g, ' ')}
+                      </span>
+                    </td>
+                    <td className="table-cell text-sm text-[var(--muted)]">{signed}/{total}</td>
+                    <td className="table-cell text-xs text-[var(--muted)]">
+                      {new Date(c.createdAt).toLocaleDateString('en-NG')}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

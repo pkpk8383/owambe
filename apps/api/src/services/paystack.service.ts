@@ -1,7 +1,7 @@
 import https from 'https';
 import { logger } from '../utils/logger';
 
-const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY!;
+const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || '';
 const BASE_URL = 'api.paystack.co';
 
 // ─── PAYSTACK API WRAPPER ────────────────────────────
@@ -153,7 +153,7 @@ import crypto from 'crypto';
 
 export function verifyWebhookSignature(body: string, signature: string): boolean {
   const hash = crypto
-    .createHmac('sha512', process.env.PAYSTACK_WEBHOOK_SECRET!)
+    .createHmac('sha512', process.env.PAYSTACK_WEBHOOK_SECRET || '')
     .update(body)
     .digest('hex');
   return hash === signature;
@@ -171,5 +171,109 @@ export function computeSplit(totalAmount: number, commissionRate: number) {
     vendorAmount: Math.round(vendorAmount * 100) / 100,
     depositAmount: Math.round(depositAmount * 100) / 100,
     balanceAmount: Math.round((totalAmount - depositAmount) * 100) / 100,
+  };
+}
+
+// ─── CHARGE AUTHORIZATION (for recurring instalments) ─
+export interface ChargeAuthorizationParams {
+  email: string;
+  amount: number;          // NGN amount (converted to kobo internally)
+  authorizationCode: string; // Reusable auth code from first charge
+  reference: string;
+  metadata?: Record<string, any>;
+}
+
+export async function chargeAuthorization(params: ChargeAuthorizationParams): Promise<{
+  id: number;
+  status: string;
+  reference: string;
+  amount: number;
+  message: string;
+}> {
+  logger.info(`Charging authorization: ${params.reference}`);
+  return paystackRequest('POST', '/transaction/charge_authorization', {
+    email: params.email,
+    amount: Math.round(params.amount * 100),
+    authorization_code: params.authorizationCode,
+    reference: params.reference,
+    metadata: params.metadata || {},
+  });
+}
+
+// ─── CREATE/FETCH PAYSTACK CUSTOMER ──────────────────
+export async function createOrFetchCustomer(email: string, firstName: string, lastName: string): Promise<{
+  id: number;
+  customer_code: string;
+  email: string;
+}> {
+  // Try to fetch existing customer
+  try {
+    const existing = await paystackRequest<any>('GET', `/customer/${encodeURIComponent(email)}`);
+    if (existing?.customer_code) return existing;
+  } catch {
+    // Customer doesn't exist — create them
+  }
+
+  return paystackRequest('POST', '/customer', {
+    email,
+    first_name: firstName,
+    last_name: lastName,
+  });
+}
+
+// ─── COMPUTE INSTALMENT SCHEDULE ─────────────────────
+export interface InstalmentScheduleItem {
+  instalmentNumber: number;
+  amount: number;          // NGN
+  dueDate: Date;
+  label: string;
+}
+
+export function computeInstalmentSchedule(params: {
+  totalAmount: number;
+  instalmentCount: 3 | 6;
+  serviceFeeRate?: number;   // % on total (default 3.5%)
+  startDate?: Date;          // First payment date (default: today)
+}): {
+  schedule: InstalmentScheduleItem[];
+  instalmentAmount: number;
+  serviceFeeAmount: number;
+  grandTotal: number;
+  monthlyAmount: number;
+} {
+  const { totalAmount, instalmentCount, serviceFeeRate = 3.5 } = params;
+  const startDate = params.startDate || new Date();
+
+  // Service fee — charged flat on the total
+  const serviceFeeAmount = Math.ceil(totalAmount * (serviceFeeRate / 100));
+  const grandTotal = totalAmount + serviceFeeAmount;
+
+  // Split evenly; first payment gets the remainder from rounding
+  const baseInstalment = Math.floor(grandTotal / instalmentCount);
+  const firstInstalment = grandTotal - baseInstalment * (instalmentCount - 1);
+
+  const schedule: InstalmentScheduleItem[] = [];
+
+  for (let i = 0; i < instalmentCount; i++) {
+    const dueDate = new Date(startDate);
+    dueDate.setMonth(dueDate.getMonth() + i);
+
+    const amount = i === 0 ? firstInstalment : baseInstalment;
+    const monthName = dueDate.toLocaleString('en-NG', { month: 'long', year: 'numeric' });
+
+    schedule.push({
+      instalmentNumber: i + 1,
+      amount,
+      dueDate,
+      label: i === 0 ? `First payment — ${monthName}` : `Instalment ${i + 1} — ${monthName}`,
+    });
+  }
+
+  return {
+    schedule,
+    instalmentAmount: baseInstalment,
+    serviceFeeAmount,
+    grandTotal,
+    monthlyAmount: Math.round(grandTotal / instalmentCount),
   };
 }

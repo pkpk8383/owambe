@@ -1,8 +1,10 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../database/client';
 import { verifyWebhookSignature, initiateRefund } from '../services/paystack.service';
 import { sendEmail } from '../services/email.service';
 import { logger } from '../utils/logger';
+import { authenticate } from '../middleware/authenticate';
+import { handleInstalmentWebhook } from './instalments';
 
 export const paymentsRouter = Router();
 
@@ -28,7 +30,13 @@ paymentsRouter.post('/webhook/paystack',
     try {
       switch (event) {
         case 'charge.success':
-          await handleChargeSuccess(data);
+          // Check if this is an instalment payment first
+          if (!(await handleInstalmentWebhook(event, data))) {
+            await handleChargeSuccess(data);
+          }
+          break;
+        case 'charge.failed':
+          await handleInstalmentWebhook(event, data);
           break;
         case 'transfer.success':
           await handleTransferSuccess(data);
@@ -154,7 +162,7 @@ async function handleRefundProcessed(data: any) {
 }
 
 // ─── INITIALIZE BALANCE PAYMENT ──────────────────────
-paymentsRouter.post('/balance/:bookingId', async (req: Request, res: Response) => {
+paymentsRouter.post('/balance/:bookingId', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { bookingId } = req.params;
     const { initializeTransaction } = await import('../services/paystack.service');
@@ -196,7 +204,6 @@ paymentsRouter.post('/balance/:bookingId', async (req: Request, res: Response) =
       }
     });
   } catch (err) {
-    logger.error('Balance payment init error:', err);
-    res.status(500).json({ success: false, error: 'Payment initialization failed' });
+    next(err);
   }
 });

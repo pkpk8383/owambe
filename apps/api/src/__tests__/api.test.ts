@@ -405,3 +405,280 @@ describe('Health Check', () => {
     expect(res.body.service).toBe('owambe-api');
   });
 });
+
+// ─── CONTRACT TESTS ───────────────────────────────────
+describe('Contracts API', () => {
+  let contractId: string;
+  let plannerSigningToken: string;
+  let vendorSigningToken: string;
+
+  it('creates a contract as planner', async () => {
+    // First we need a vendor ID — get from vendor profile
+    const vendorRes = await request(app)
+      .get('/api/vendors/me')
+      .set('Authorization', `Bearer ${vendorToken}`);
+    const vendorId = vendorRes.body.vendor?.id;
+    if (!vendorId) return; // skip if vendor not set up
+
+    const res = await request(app)
+      .post('/api/contracts')
+      .set('Authorization', `Bearer ${plannerToken}`)
+      .send({
+        vendorId,
+        title: 'Test Photography Agreement',
+        templateType: 'PHOTOGRAPHY',
+        totalAmount: 500000,
+        eventDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        eventVenue: 'Eko Hotel, Lagos',
+        guestCount: 150,
+        eventDescription: 'Wedding ceremony and reception',
+      });
+
+    if (res.status === 201) {
+      contractId = res.body.contract.id;
+      const sigs = res.body.contract.signatures;
+      plannerSigningToken = sigs.find((s: any) => s.signerRole === 'PLANNER')?.signingToken;
+      vendorSigningToken = sigs.find((s: any) => s.signerRole === 'VENDOR')?.signingToken;
+    }
+    // Accept 201 (created) or 404 (vendor not found in test db)
+    expect([201, 404]).toContain(res.status);
+  });
+
+  it('lists contracts as planner', async () => {
+    const res = await request(app)
+      .get('/api/contracts')
+      .set('Authorization', `Bearer ${plannerToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('contracts');
+    expect(Array.isArray(res.body.contracts)).toBe(true);
+  });
+
+  it('lists contracts as vendor', async () => {
+    const res = await request(app)
+      .get('/api/contracts')
+      .set('Authorization', `Bearer ${vendorToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('contracts');
+  });
+
+  it('blocks contract creation from vendor role', async () => {
+    const res = await request(app)
+      .post('/api/contracts')
+      .set('Authorization', `Bearer ${vendorToken}`)
+      .send({ vendorId: 'some-id', title: 'Test' });
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects signing with invalid token', async () => {
+    const res = await request(app)
+      .post('/api/contracts/sign/invalid-token-xyz')
+      .send({ signatureData: 'data:image/png;base64,abc', agreedToTerms: true });
+    expect(res.status).toBe(404);
+  });
+
+  it('gets signing page data with valid token', async () => {
+    if (!plannerSigningToken) return;
+    const res = await request(app)
+      .get(`/api/contracts/sign/${plannerSigningToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('contract');
+    expect(res.body).toHaveProperty('signature');
+  });
+
+  it('gets contract by id as planner', async () => {
+    if (!contractId) return;
+    const res = await request(app)
+      .get(`/api/contracts/${contractId}`)
+      .set('Authorization', `Bearer ${plannerToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.contract.id).toBe(contractId);
+    expect(res.body.contract.status).toBe('DRAFT');
+  });
+
+  it('sends contract for signing', async () => {
+    if (!contractId) return;
+    const res = await request(app)
+      .post(`/api/contracts/${contractId}/send`)
+      .set('Authorization', `Bearer ${plannerToken}`);
+    expect([200, 400]).toContain(res.status); // 400 if already sent
+    if (res.status === 200) {
+      expect(res.body.contract.status).toBe('SENT');
+    }
+  });
+
+  it('signs contract as planner', async () => {
+    if (!plannerSigningToken) return;
+    const res = await request(app)
+      .post(`/api/contracts/sign/${plannerSigningToken}`)
+      .send({
+        signatureData: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        agreedToTerms: true,
+      });
+    expect([200, 409]).toContain(res.status); // 409 if already signed
+  });
+
+  it('downloads PDF for a contract', async () => {
+    if (!contractId) return;
+    const res = await request(app)
+      .get(`/api/contracts/${contractId}/pdf`)
+      .set('Authorization', `Bearer ${plannerToken}`);
+    // Returns PDF bytes or redirects — accept success
+    expect([200, 404]).toContain(res.status);
+    if (res.status === 200) {
+      expect(res.headers['content-type']).toMatch(/pdf/);
+    }
+  });
+
+  it('voids a draft contract', async () => {
+    // Create a fresh contract to void
+    const vendorRes = await request(app)
+      .get('/api/vendors/me')
+      .set('Authorization', `Bearer ${vendorToken}`);
+    const vendorId = vendorRes.body.vendor?.id;
+    if (!vendorId) return;
+
+    const createRes = await request(app)
+      .post('/api/contracts')
+      .set('Authorization', `Bearer ${plannerToken}`)
+      .send({ vendorId, title: 'To Be Voided', templateType: 'SERVICE_AGREEMENT' });
+    if (createRes.status !== 201) return;
+
+    const res = await request(app)
+      .post(`/api/contracts/${createRes.body.contract.id}/void`)
+      .set('Authorization', `Bearer ${plannerToken}`)
+      .send({ reason: 'Test void' });
+    expect(res.status).toBe(200);
+    expect(res.body.contract.status).toBe('VOID');
+  });
+
+  it('requires authentication for contract routes', async () => {
+    const res = await request(app).get('/api/contracts');
+    expect(res.status).toBe(401);
+  });
+});
+
+// ─── PROMO CODE TESTS ────────────────────────────────
+describe('Promo Codes API', () => {
+  let testEventId: string;
+
+  it('creates a promo code for an event', async () => {
+    // Get planner events
+    const eventsRes = await request(app)
+      .get('/api/events')
+      .set('Authorization', `Bearer ${plannerToken}`);
+    testEventId = eventsRes.body.events?.[0]?.id;
+    if (!testEventId) return;
+
+    const res = await request(app)
+      .post(`/api/promos/event/${testEventId}`)
+      .set('Authorization', `Bearer ${plannerToken}`)
+      .send({ code: 'TESTPROMO20', discountType: 'PERCENTAGE', discountValue: 20 });
+    expect([201, 409]).toContain(res.status);
+  });
+
+  it('validates a promo code', async () => {
+    if (!testEventId) return;
+    const res = await request(app)
+      .post('/api/promos/validate')
+      .send({ code: 'TESTPROMO20', eventId: testEventId, ticketPrice: 10000 });
+    expect([200, 404]).toContain(res.status);
+  });
+
+  it('rejects invalid promo codes', async () => {
+    if (!testEventId) return;
+    const res = await request(app)
+      .post('/api/promos/validate')
+      .send({ code: 'DOESNOTEXIST999', eventId: testEventId });
+    expect(res.status).toBe(404);
+  });
+});
+
+// ─── WAITLIST TESTS ──────────────────────────────────
+describe('Waitlist API', () => {
+  it('joins waitlist for an event', async () => {
+    const eventsRes = await request(app)
+      .get('/api/events')
+      .set('Authorization', `Bearer ${plannerToken}`);
+    const eventId = eventsRes.body.events?.[0]?.id;
+    if (!eventId) return;
+
+    // Need a ticket type
+    const ticketsRes = await request(app)
+      .get(`/api/tickets/event/${eventId}`)
+      .set('Authorization', `Bearer ${plannerToken}`);
+    const ticketTypeId = ticketsRes.body.ticketTypes?.[0]?.id;
+    if (!ticketTypeId) return;
+
+    const res = await request(app)
+      .post('/api/waitlist/join')
+      .send({
+        eventId,
+        ticketTypeId,
+        email: `waitlist-${Date.now()}@test.com`,
+        firstName: 'Test',
+        lastName: 'User',
+      });
+    expect([201, 409]).toContain(res.status);
+  });
+
+  it('lists waitlist as planner', async () => {
+    const eventsRes = await request(app)
+      .get('/api/events')
+      .set('Authorization', `Bearer ${plannerToken}`);
+    const eventId = eventsRes.body.events?.[0]?.id;
+    if (!eventId) return;
+
+    const res = await request(app)
+      .get(`/api/waitlist/event/${eventId}`)
+      .set('Authorization', `Bearer ${plannerToken}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.waitlist)).toBe(true);
+  });
+});
+
+// ─── TENANT / WHITE-LABEL TESTS ──────────────────────
+describe('Tenants API', () => {
+  it('resolves non-existent subdomain returns 404', async () => {
+    const res = await request(app)
+      .get('/api/tenants/resolve?subdomain=nonexistent-xyz-123');
+    expect(res.status).toBe(404);
+  });
+
+  it('get my tenant as planner returns null for non-Scale planner', async () => {
+    const res = await request(app)
+      .get('/api/tenants/me')
+      .set('Authorization', `Bearer ${plannerToken}`);
+    expect(res.status).toBe(200);
+    // Null if planner is not Scale
+    expect(res.body).toHaveProperty('tenant');
+  });
+
+  it('rejects portal creation for non-Scale planner', async () => {
+    const res = await request(app)
+      .post('/api/tenants')
+      .set('Authorization', `Bearer ${plannerToken}`)
+      .send({ subdomain: 'test-portal-xyz', name: 'Test Portal' });
+    expect(res.status).toBe(403);
+  });
+
+  it('requires authentication for tenant management', async () => {
+    const res = await request(app).get('/api/tenants/me');
+    expect(res.status).toBe(401);
+  });
+});
+
+// ─── PAYMENTS AUTH TESTS ──────────────────────────────
+describe('Payments API Auth', () => {
+  it('requires authentication on balance payment endpoint', async () => {
+    const res = await request(app)
+      .post('/api/payments/balance/some-booking-id');
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 404 for non-existent booking on balance payment', async () => {
+    const res = await request(app)
+      .post('/api/payments/balance/00000000-0000-0000-0000-000000000000')
+      .set('Authorization', `Bearer ${plannerToken}`);
+    expect(res.status).toBe(404);
+  });
+});

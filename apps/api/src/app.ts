@@ -30,10 +30,13 @@ import { aiRouter } from './routes/ai';
 import { adminRouter } from './routes/admin';
 import { notificationsRouter } from './routes/notifications';
 import { messagesRouter } from './routes/messages';
+import { contractsRouter } from './routes/contracts';
 import { tenantsRouter } from './routes/tenants';
 import { promosRouter } from './routes/promos';
 import { waitlistRouter } from './routes/waitlist';
 import { ticketsRouter } from './routes/tickets';
+import { crmRouter } from './routes/crm';
+import { instalmentsRouter } from './routes/instalments';
 
 import { initSocket } from './socket';
 
@@ -48,7 +51,11 @@ initSocket(io);
 app.set('trust proxy', 1);
 app.use(helmet({ crossOriginEmbedderPolicy: false }));
 app.use(cors({
-  origin: [process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', 'http://localhost:3001'],
+  origin: [
+    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    process.env.WHITELABEL_URL || 'http://localhost:3001',
+    'http://localhost:3002',
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 }));
@@ -89,10 +96,13 @@ app.use('/api/ai', aiRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api', messagesRouter);
+app.use('/api/contracts', contractsRouter);
 app.use('/api/tenants', tenantsRouter);
 app.use('/api/promos', promosRouter);
 app.use('/api/waitlist', waitlistRouter);
 app.use('/api/tickets', ticketsRouter);
+app.use('/api/crm', crmRouter);
+app.use('/api/instalments', instalmentsRouter);
 
 // 404 + error handlers
 app.use((_req, res) => { res.status(404).json({ success: false, error: 'Route not found' }); });

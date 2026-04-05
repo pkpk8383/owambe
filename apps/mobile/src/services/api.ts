@@ -123,3 +123,37 @@ export const notificationsApi = {
   list: () => api.get('/notifications'),
   readAll: () => api.put('/notifications/read-all'),
 };
+
+export const ticketsApi = {
+  list: (eventId: string) => api.get(`/tickets/event/${eventId}`),
+  create: (eventId: string, data: any) => api.post(`/tickets/event/${eventId}`, data),
+  update: (id: string, data: any) => api.put(`/tickets/${id}`, data),
+  setStatus: (id: string, status: string) => api.patch(`/tickets/${id}/status`, { status }),
+};
+
+export const promosApi = {
+  list: (eventId: string) => api.get(`/promos/event/${eventId}`),
+  create: (eventId: string, data: any) => api.post(`/promos/event/${eventId}`, data),
+  validate: (code: string, eventId: string, ticketPrice?: number) =>
+    api.post('/promos/validate', { code, eventId, ticketPrice }),
+  delete: (id: string) => api.delete(`/promos/${id}`),
+};
+
+export const uploadApi = {
+  image: async (uri: string, fieldName = 'image') => {
+    const formData = new FormData();
+    const filename = uri.split('/').pop() || 'image.jpg';
+    const type = filename.endsWith('.png') ? 'image/png' : 'image/jpeg';
+    formData.append(fieldName, { uri, name: filename, type } as any);
+    return api.post('/upload/image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+};
+
+export const contractsApi = {
+  list: (params?: any) => api.get('/contracts', { params }),
+  get: (id: string) => api.get(`/contracts/${id}`),
+  fromBooking: (bookingId: string, data?: any) => api.post(`/contracts/from-booking/${bookingId}`, data || {}),
+  downloadPdfUrl: (id: string) => `${api.defaults.baseURL}/contracts/${id}/pdf`,
+};

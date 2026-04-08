@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
@@ -16,15 +16,30 @@ import {
 const TABS = ['Overview', 'Vendor Queue', 'Users', 'Disputes', 'Commission', 'Portals', 'Contracts'];
 
 export default function AdminPage() {
-  const { user } = useAuthStore();
+  const { user, _hasHydrated } = useAuthStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Overview');
   const queryClient = useQueryClient();
 
-  if (user?.role !== 'ADMIN') {
-    router.replace('/dashboard');
-    return null;
+  useEffect(() => {
+    if (!_hasHydrated) return;
+    if (!user) {
+      router.replace('/login');
+    } else if (user.role !== 'ADMIN') {
+      router.replace('/dashboard');
+    }
+  }, [_hasHydrated, user, router]);
+
+  // Show loading while store is rehydrating from localStorage
+  if (!_hasHydrated || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
+        <Loader2 size={32} className="animate-spin text-[var(--muted)]" />
+      </div>
+    );
   }
+
+  if (user.role !== 'ADMIN') return null;
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">

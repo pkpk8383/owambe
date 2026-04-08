@@ -20,28 +20,32 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const { login, isLoading } = useAuthStore();
   const router = useRouter();
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
 
   async function onSubmit(data: LoginForm) {
+    setLoginError(null);
     try {
       await login(data.email, data.password);
+      // Read the user from the store after login
+      const user = useAuthStore.getState().user;
       toast.success('Welcome back!');
       // Redirect based on role
-      const { user } = useAuthStore.getState();
       if (user?.role === 'ADMIN') {
-        router.push('/admin');
+        router.replace('/admin');
       } else if (user?.role === 'VENDOR') {
-        router.push('/vendor');
+        router.replace('/vendor');
       } else if (user?.role === 'PLANNER') {
-        router.push('/dashboard');
+        router.replace('/dashboard');
       } else {
-        router.push('/');
+        router.replace('/');
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Login failed');
+      const message = err.response?.data?.error || err.message || 'Login failed. Please check your credentials.';
+      setLoginError(message);
     }
   }
 
@@ -83,6 +87,12 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
+
+          {loginError && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+              {loginError}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>

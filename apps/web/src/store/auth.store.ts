@@ -18,10 +18,12 @@ interface AuthState {
   accessToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  _hasHydrated: boolean;
 
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
   setLoading: (loading: boolean) => void;
+  setHasHydrated: (state: boolean) => void;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -34,6 +36,7 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       isLoading: false,
       isAuthenticated: false,
+      _hasHydrated: false,
 
       setAuth: (user, accessToken) => {
         set({ user, accessToken, isAuthenticated: true });
@@ -46,6 +49,8 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setLoading: (isLoading) => set({ isLoading }),
+
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
 
       login: async (email, password) => {
         set({ isLoading: true });
@@ -88,9 +93,12 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
+        // Called after rehydration (with or without stored data)
         if (state?.accessToken) {
           api.defaults.headers.common['Authorization'] = `Bearer ${state.accessToken}`;
         }
+        // Mark hydration as complete — state may be undefined if no stored data
+        useAuthStore.getState().setHasHydrated(true);
       },
     }
   )

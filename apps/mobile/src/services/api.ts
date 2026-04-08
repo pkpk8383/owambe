@@ -78,6 +78,7 @@ export const eventsApi = {
   create: (d: any) => api.post('/events', d),
   publish: (id: string) => api.post(`/events/${id}/publish`),
   getPublic: (slug: string) => api.get(`/events/public/${slug}`),
+  listPublic: (params?: any) => api.get('/events/public', { params }),
 };
 
 export const vendorsApi = {

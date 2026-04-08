@@ -54,6 +54,7 @@ export default function RootLayout() {
             headerBackTitle: 'Back',
           }} />
           <Stack.Screen name="payment" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="browse-events" options={{ headerShown: false }} />
         </Stack>
         <Toast />
       </QueryClientProvider>

@@ -170,6 +170,29 @@ export default function HomeScreen() {
                   </Text>
                 </View>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => router.push('/browse-events')}
+                activeOpacity={0.85}
+                style={{
+                  backgroundColor: COLORS.accent + '15',
+                  borderRadius: RADIUS.xl,
+                  padding: SPACING.xl,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: SPACING.md,
+                  borderWidth: 1,
+                  borderColor: COLORS.accent + '40',
+                }}
+              >
+                <Text style={{ fontSize: 48 }}>🎪</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: COLORS.dark, fontSize: 18, fontWeight: '800' }}>Browse Events</Text>
+                  <Text style={{ color: COLORS.muted, fontSize: 13, marginTop: 4 }}>
+                    Discover concerts, conferences, weddings & more
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
           )}
 

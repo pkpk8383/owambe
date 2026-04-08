@@ -55,6 +55,31 @@ export default function RootLayout() {
           }} />
           <Stack.Screen name="payment" options={{ presentation: 'modal' }} />
           <Stack.Screen name="browse-events" options={{ headerShown: false }} />
+          <Stack.Screen name="events" options={{
+            headerShown: true,
+            headerTitle: 'My Events',
+            headerBackTitle: 'Back',
+          }} />
+          <Stack.Screen name="event/[id]" options={{
+            headerShown: true,
+            headerTitle: 'Event Details',
+            headerBackTitle: 'Back',
+          }} />
+          <Stack.Screen name="analytics" options={{
+            headerShown: true,
+            headerTitle: 'Analytics',
+            headerBackTitle: 'Back',
+          }} />
+          <Stack.Screen name="checkin" options={{
+            headerShown: true,
+            headerTitle: 'Check-in Scanner',
+            headerBackTitle: 'Back',
+          }} />
+          <Stack.Screen name="dayof" options={{
+            headerShown: true,
+            headerTitle: 'Day-of Tools',
+            headerBackTitle: 'Back',
+          }} />
         </Stack>
         <Toast />
       </QueryClientProvider>

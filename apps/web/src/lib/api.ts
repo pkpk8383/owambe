@@ -74,9 +74,12 @@ api.interceptors.response.use(
       }
     }
 
-    // Show error toast for non-401 errors
+    // Show error toast for non-401 errors, but suppress for silent background auth calls
+    const silentEndpoints = ['/auth/refresh', '/auth/me'];
+    const requestUrl = error.config?.url || '';
+    const isSilent = silentEndpoints.some(ep => requestUrl.includes(ep));
     const message = error.response?.data?.error || error.message || 'Something went wrong';
-    if (error.response?.status !== 401) {
+    if (error.response?.status !== 401 && !isSilent) {
       toast.error(message);
     }
 

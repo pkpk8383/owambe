@@ -29,7 +29,17 @@ export default function LoginPage() {
     try {
       await login(data.email, data.password);
       toast.success('Welcome back!');
-      router.push('/dashboard');
+      // Redirect based on role
+      const { user } = useAuthStore.getState();
+      if (user?.role === 'ADMIN') {
+        router.push('/admin');
+      } else if (user?.role === 'VENDOR') {
+        router.push('/vendor');
+      } else if (user?.role === 'PLANNER') {
+        router.push('/dashboard');
+      } else {
+        router.push('/');
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Login failed');
     }

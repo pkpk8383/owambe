@@ -49,16 +49,24 @@ analyticsRouter.get('/planner/overview', requireRole('PLANNER'), async (req: Req
       ? Math.round(((recentAttendees - prevAttendees) / prevAttendees) * 100)
       : 100;
 
-    // Registrations by day (last 30 days)
-    const registrationsByDay = await prisma.$queryRaw<any[]>`
-      SELECT DATE(a."registeredAt") as date, COUNT(*) as count
-      FROM attendees a
-      JOIN events e ON a."eventId" = e.id
-      WHERE e."plannerId" = ${planner.id}::uuid
-        AND a."registeredAt" >= ${thirtyDaysAgo}
-      GROUP BY DATE(a."registeredAt")
-      ORDER BY date ASC
-    `;
+    // Registrations by day (last 30 days) — using Prisma ORM to avoid raw SQL column name issues
+    const recentRegistrations = await prisma.attendee.findMany({
+      where: {
+        event: { plannerId: planner.id },
+        registeredAt: { gte: thirtyDaysAgo },
+      },
+      select: { registeredAt: true },
+      orderBy: { registeredAt: 'asc' },
+    });
+    // Group by date in JS
+    const dayMap = new Map<string, number>();
+    recentRegistrations.forEach(a => {
+      const d = a.registeredAt.toISOString().split('T')[0];
+      dayMap.set(d, (dayMap.get(d) || 0) + 1);
+    });
+    const registrationsByDay = Array.from(dayMap.entries())
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     res.json({
       success: true,

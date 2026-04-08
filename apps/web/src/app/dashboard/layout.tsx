@@ -8,7 +8,7 @@ import { cn, initials } from '@/lib/utils';
 import {
   Zap, Calendar, Plus, Globe, Scan, Clock, Mail,
   Mic, MapPin, Trophy, Smartphone, BarChart2, CreditCard,
-  LogOut, Search, Bell, LayoutTemplate, FileSignature, Link2, CreditCard
+  LogOut, Search, Bell, LayoutTemplate, FileSignature, Link2
 } from 'lucide-react';
 
 const NAV_SECTIONS = [

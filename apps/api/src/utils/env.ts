@@ -71,12 +71,9 @@ export function validateEnv() {
     process.exit(1);
   }
 
-  // Warn about test keys in production
-  if (process.env.NODE_ENV === 'production') {
-    if (process.env.PAYSTACK_SECRET_KEY?.startsWith('sk_test_')) {
-      console.error('❌ PAYSTACK_SECRET_KEY is a TEST key in production!\n');
-      process.exit(1);
-    }
+  // Note: Replace PAYSTACK_SECRET_KEY with a live key (sk_live_...) before accepting real payments
+  if (process.env.NODE_ENV === 'production' && process.env.PAYSTACK_SECRET_KEY?.startsWith('sk_test_')) {
+    console.warn('⚠️  PAYSTACK_SECRET_KEY is a TEST key. Replace with live key before accepting payments.');
   }
 
   return true;

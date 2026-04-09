@@ -436,10 +436,24 @@ function UsersTab() {
 
 // ─── DISPUTES ─────────────────────────────────────────
 function DisputesTab() {
-  const MOCK_DISPUTES = [
-    { id: '1', ref: 'OWB-338-FGH', type: 'Vendor Cancellation', planner: 'Adaeze Okonkwo', vendor: 'Eko Hotel & Suites', amount: 2400000, opened: '2h ago', status: 'OPEN' },
-    { id: '2', ref: 'OWB-291-KLM', type: 'Service Quality', planner: 'Emeka Nwosu', vendor: 'Glow Up Studio', amount: 150000, opened: '1d ago', status: 'UNDER_REVIEW' },
-  ];
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-disputes'],
+    queryFn: () => api.get('/admin/bookings', { params: { status: 'DISPUTED' } }).then(r => r.data),
+  });
+  const refundMutation = useMutation({
+    mutationFn: ({ id, amount, reason }: { id: string; amount?: number; reason: string }) =>
+      api.post(`/admin/bookings/${id}/refund`, { amount, reason }),
+    onSuccess: () => {
+      toast.success('Refund initiated');
+      queryClient.invalidateQueries({ queryKey: ['admin-disputes'] });
+    },
+    onError: () => toast.error('Refund failed'),
+  });
+
+  const disputes = data?.bookings || [];
+
+  if (isLoading) return <div className="flex justify-center py-12"><Loader2 size={24} className="animate-spin text-[var(--muted)]" /></div>;
 
   return (
     <div className="animate-fade-up">
@@ -448,53 +462,65 @@ function DisputesTab() {
           <h2 className="section-title">Dispute Management</h2>
           <p className="text-xs text-[var(--muted)] mt-0.5">Resolve within 24 hours. Full refund if vendor at fault.</p>
         </div>
-        <span className="badge-pending">{MOCK_DISPUTES.length} open</span>
+        <span className="badge-pending">{disputes.length} open</span>
       </div>
 
       <div className="space-y-3">
-        {MOCK_DISPUTES.map(d => (
-          <div key={d.id} className="card p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono text-xs text-[var(--muted)]">{d.ref}</span>
-                  <span className="badge-pending text-[10px]">{d.type}</span>
-                  <span className={d.status === 'OPEN' ? 'badge-pending' : 'badge-upcoming'}>{d.status}</span>
+        {disputes.map((d: any) => {
+          const plannerName = d.planner?.user ? `${d.planner.user.firstName || ''} (${d.planner.user.email})` : d.consumer?.user ? `${d.consumer.user.firstName || ''} (${d.consumer.user.email})` : 'Unknown';
+          const vendorName = d.vendor?.businessName || 'Unknown vendor';
+          return (
+            <div key={d.id} className="card p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-mono text-xs text-[var(--muted)]">{d.reference}</span>
+                    <span className="badge-pending text-[10px]">{d.bookingType}</span>
+                    <span className="badge-pending">{d.status}</span>
+                  </div>
+                  <div className="text-sm text-[var(--muted)]">
+                    <strong className="text-[var(--dark)]">{plannerName}</strong> vs{' '}
+                    <strong className="text-[var(--dark)]">{vendorName}</strong>
+                  </div>
+                  {d.cancellationReason && (
+                    <p className="text-xs text-[var(--muted)] mt-1 italic">&ldquo;{d.cancellationReason}&rdquo;</p>
+                  )}
                 </div>
-                <div className="text-sm text-[var(--muted)]">
-                  <strong className="text-[var(--dark)]">{d.planner}</strong> vs{' '}
-                  <strong className="text-[var(--dark)]">{d.vendor}</strong>
+                <div className="text-right">
+                  <div className="font-bold text-[var(--accent)]">{formatNGN(Number(d.totalAmount))}</div>
+                  <div className="text-xs text-[var(--muted)]">{formatTimeAgo(d.createdAt)}</div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="font-bold text-[var(--accent)]">{formatNGN(d.amount)}</div>
-                <div className="text-xs text-[var(--muted)]">Opened {d.opened}</div>
+              <div className="flex gap-2 flex-wrap">
+                <button onClick={() => toast('📧 Both parties messaged for evidence')}
+                  className="btn-secondary text-xs flex items-center gap-1.5">
+                  <Bell size={11} /> Request Evidence
+                </button>
+                <button
+                  onClick={() => refundMutation.mutate({ id: d.id, reason: 'Full refund — vendor at fault' })}
+                  disabled={refundMutation.isPending}
+                  className="btn-primary text-xs">
+                  Issue Full Refund
+                </button>
+                <button
+                  onClick={() => refundMutation.mutate({ id: d.id, amount: Math.round(Number(d.totalAmount) * 0.5), reason: 'Partial refund — split decision' })}
+                  disabled={refundMutation.isPending}
+                  className="btn-secondary text-xs">
+                  Partial Refund
+                </button>
+                <button onClick={() => toast('✅ Dispute resolved — no refund')}
+                  className="btn-secondary text-xs">
+                  Resolve — No Refund
+                </button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => toast('📧 Both parties messaged for evidence')}
-                className="btn-secondary text-xs flex items-center gap-1.5">
-                <Bell size={11} /> Request Evidence
-              </button>
-              <button onClick={() => toast('💰 Full refund issued to client')}
-                className="btn-primary text-xs">
-                Issue Full Refund
-              </button>
-              <button onClick={() => toast('✅ Dispute resolved — no refund')}
-                className="btn-secondary text-xs">
-                Resolve — No Refund
-              </button>
-              <button onClick={() => toast('⚖️ Partial refund issued')}
-                className="btn-secondary text-xs">
-                Partial Refund
-              </button>
-            </div>
-          </div>
-        ))}
-        {MOCK_DISPUTES.length === 0 && (
+          );
+        })}
+        {disputes.length === 0 && (
           <div className="card text-center py-12">
             <CheckCircle size={32} className="mx-auto mb-3 text-green-400" />
             <div className="font-bold text-[var(--dark)]">No open disputes</div>
+            <p className="text-xs text-[var(--muted)] mt-1">All bookings are in good standing</p>
           </div>
         )}
       </div>

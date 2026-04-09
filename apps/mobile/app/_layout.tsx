@@ -35,7 +35,6 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(vendor)" options={{ headerShown: false }} />
-          <Stack.Screen name="plan" options={{ headerShown: false }} />
           <Stack.Screen name="vendor/[slug]" options={{
             headerShown: true,
             headerTitle: '',
@@ -52,7 +51,6 @@ export default function RootLayout() {
             headerTitle: 'Booking',
             headerBackTitle: 'Back',
           }} />
-          <Stack.Screen name="payment" options={{ presentation: 'modal' }} />
           <Stack.Screen name="browse-events" options={{ headerShown: false }} />
           <Stack.Screen name="events" options={{
             headerShown: true,

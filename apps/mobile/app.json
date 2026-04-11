@@ -2,7 +2,7 @@
   "expo": {
     "name": "Owambe",
     "slug": "owambe",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -28,7 +28,7 @@
         "backgroundColor": "#2D6A4F"
       },
       "package": "com.owambe.app",
-      "versionCode": 8,
+      "versionCode": 9,
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",

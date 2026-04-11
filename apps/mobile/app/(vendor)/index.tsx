@@ -114,7 +114,7 @@ export default function VendorHomeScreen() {
                         {b.eventDescription || 'Event Booking'}
                       </Text>
                       <Text style={{ ...TYPOGRAPHY.caption, marginTop: 2 }}>
-                        📅 {new Date(b.eventDate).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}
+                        📅 {b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' }) : 'TBC'}
                         {' · '}{b.bookingType}
                       </Text>
                     </View>

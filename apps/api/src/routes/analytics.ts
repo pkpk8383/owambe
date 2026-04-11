@@ -68,6 +68,19 @@ analyticsRouter.get('/planner/overview', requireRole('PLANNER'), async (req: Req
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
+    // Compute avg fill rate across all planner events that have a capacity set
+    const eventsWithCapacity = await prisma.event.findMany({
+      where: { plannerId: planner.id, maxCapacity: { gt: 0 } },
+      include: { _count: { select: { attendees: true } } },
+    });
+    const fillRate = eventsWithCapacity.length > 0
+      ? Math.round(
+          eventsWithCapacity.reduce((sum, ev) =>
+            sum + (ev._count.attendees / (ev.maxCapacity || 1)) * 100, 0
+          ) / eventsWithCapacity.length
+        )
+      : 0;
+
     res.json({
       success: true,
       stats: {
@@ -77,6 +90,7 @@ analyticsRouter.get('/planner/overview', requireRole('PLANNER'), async (req: Req
         totalRevenue: Number(totalRevenue._sum.amountPaid || 0),
         recentAttendees,
         registrationGrowth,
+        fillRate,
       },
       registrationsByDay,
     });

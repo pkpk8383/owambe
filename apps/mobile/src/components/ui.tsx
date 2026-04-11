@@ -179,20 +179,22 @@ export function Input({
 // ─── BADGE ────────────────────────────────────────────
 interface BadgeProps {
   label: string;
-  variant?: 'confirmed' | 'pending' | 'cancelled' | 'live' | 'draft' | 'primary';
+  variant?: 'confirmed' | 'pending' | 'cancelled' | 'live' | 'draft' | 'primary' | 'published' | 'ended' | string;
 }
 
-const BADGE_COLORS = {
+const BADGE_COLORS: Record<string, { bg: string; text: string }> = {
   confirmed: { bg: '#D1FAE5', text: '#065F46' },
   pending: { bg: '#FEF3C7', text: '#92400E' },
   cancelled: { bg: '#FEE2E2', text: '#991B1B' },
   live: { bg: '#D1FAE5', text: '#065F46' },
   draft: { bg: '#F3F4F6', text: '#6B7280' },
+  published: { bg: '#DBEAFE', text: '#1E40AF' },
+  ended: { bg: '#F3F4F6', text: '#6B7280' },
   primary: { bg: COLORS.primaryLight, text: COLORS.primary },
 };
 
 export function Badge({ label, variant = 'primary' }: BadgeProps) {
-  const c = BADGE_COLORS[variant];
+  const c = BADGE_COLORS[variant] ?? BADGE_COLORS['primary'];
   return (
     <View style={{ backgroundColor: c.bg, paddingHorizontal: 8, paddingVertical: 3, borderRadius: RADIUS.full }}>
       <Text style={{ fontSize: 11, fontWeight: '700', color: c.text, letterSpacing: 0.3 }}>
@@ -208,8 +210,9 @@ const AVATAR_COLORS = [
 ];
 
 export function Avatar({ name, size = 40, uri }: { name: string; size?: number; uri?: string }) {
-  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  const colorIdx = name.charCodeAt(0) % AVATAR_COLORS.length;
+  const safeName = name || '?';
+  const initials = safeName.split(' ').map(n => n[0]).filter(Boolean).join('').toUpperCase().slice(0, 2) || '?';
+  const colorIdx = safeName.charCodeAt(0) % AVATAR_COLORS.length;
 
   return (
     <View style={{

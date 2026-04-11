@@ -36,7 +36,7 @@ export default function EventDetailScreen() {
     );
   }
 
-  const startDate = new Date(event.startDate);
+  const startDate = event.startDate ? new Date(event.startDate) : null;
   const endDate = event.endDate ? new Date(event.endDate) : null;
 
   return (
@@ -96,8 +96,8 @@ export default function EventDetailScreen() {
               <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
                 <Text style={{ width: 24 }}>📅</Text>
                 <Text style={TYPOGRAPHY.body}>
-                  {startDate.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}
-                  {endDate && endDate.toDateString() !== startDate.toDateString()
+                  {startDate ? startDate.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC'}
+                  {startDate && endDate && endDate.toDateString() !== startDate.toDateString()
                     ? ` – ${endDate.toLocaleDateString('en-NG', { day: 'numeric', month: 'long' })}`
                     : ''}
                 </Text>

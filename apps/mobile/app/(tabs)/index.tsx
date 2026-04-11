@@ -232,13 +232,13 @@ export default function HomeScreen() {
                         <View style={{ flex: 1 }}>
                           <Text style={{ ...TYPOGRAPHY.h4, marginBottom: 4 }} numberOfLines={1}>{ev.name}</Text>
                           <Text style={TYPOGRAPHY.caption}>
-                            📅 {new Date(ev.startDate).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}
+                            📅 {ev.startDate ? new Date(ev.startDate).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' }) : 'TBC'}
                             {ev.city ? ` · 📍 ${ev.city}` : ''}
                           </Text>
                         </View>
                         <Badge
-                          label={ev.status}
-                          variant={ev.status.toLowerCase() as any}
+                          label={ev.status || 'DRAFT'}
+                          variant={(ev.status || 'draft').toLowerCase() as any}
                         />
                       </View>
                       <View style={{ flexDirection: 'row', gap: SPACING.lg, marginTop: SPACING.sm }}>

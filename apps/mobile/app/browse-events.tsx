@@ -169,9 +169,9 @@ export default function BrowseEventsScreen() {
                   </View>
                   {/* Date & location */}
                   <Text style={{ ...TYPOGRAPHY.caption, marginBottom: 4 }}>
-                    📅 {new Date(ev.startDate).toLocaleDateString('en-NG', {
+                    📅 {ev.startDate ? new Date(ev.startDate).toLocaleDateString('en-NG', {
                       weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-                    })}
+                    }) : 'Date TBC'}
                   </Text>
                   {ev.venue || ev.city ? (
                     <Text style={{ ...TYPOGRAPHY.caption, marginBottom: 8 }}>

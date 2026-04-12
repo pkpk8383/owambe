@@ -154,9 +154,15 @@ const FAQ_ITEMS = [
   { q: 'When will I receive my ticket?', a: 'Your ticket QR code is available immediately after registration in the Bookings tab. You can also find it under the event you registered for.' },
   { q: 'How do I check in attendees?', a: "Go to Profile → Check-in Scanner (Planner Tools). Point the camera at an attendee's QR code to check them in instantly." },
   { q: 'Can I cancel a booking?', a: 'Yes. Open the booking in the Bookings tab and tap "Cancel Booking". Cancellation policies vary by vendor — check the booking terms before cancelling.' },
-  { q: 'How are payments processed?', a: 'All payments are processed securely via Paystack. Your card details are never stored on Owambe servers.' },
-  { q: 'What is the Starter plan?', a: 'The Starter plan is free and includes up to 2 active events, basic analytics, and access to the vendor marketplace. Upgrade to Growth or Scale for more events, AI tools, and advanced features.' },
-  { q: 'How do I upgrade my plan?', a: 'Go to Profile → Planner Tools → Analytics to view your current plan. Contact support@owambe.com to upgrade.' },
+  { q: 'How are payments processed?', a: 'All payments are processed securely via Paystack. Your card details are never stored on Owambe servers. Instalment payment plans are also available — split vendor costs into 2–4 payments.' },
+  {
+    q: 'What are the plan differences?',
+    a: 'Owambe has three plans:\n\n🟢 STARTER (Free)\n• Events & ticketing\n• Vendor bookings\n• AI event planning\n• Instalment payments\n• Basic analytics\n\n🔵 GROWTH\nEverything in Starter, plus:\n• Email campaigns to attendees\n• Contracts & e-signatures (DocuSign-style)\n• Market intelligence analytics\n• Priority support\n\n🟣 SCALE\nEverything in Growth, plus:\n• White-label event portal (your own branded URL)\n• CRM sync (Salesforce & HubSpot)\n• Dedicated account manager\n• Custom integrations',
+  },
+  {
+    q: 'How do I upgrade my plan?',
+    a: 'To upgrade from Starter to Growth or Scale:\n\n1. Email upgrade@owambe.com with your registered email address and the plan you want\n2. Or tap "Contact Support" below and send a message — our team responds within 4 hours\n3. Once confirmed, your new features activate immediately\n\nGrowth unlocks: Email campaigns, Contracts, Market intelligence\nScale unlocks: White-label portal, CRM sync (Salesforce/HubSpot)',
+  },
 ];
 
 function HelpModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {

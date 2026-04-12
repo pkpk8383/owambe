@@ -128,6 +128,7 @@ enum SpeakerStatus {
 }
 
 enum SponsorTier {
+  PLATINUM
   GOLD
   SILVER
   BRONZE

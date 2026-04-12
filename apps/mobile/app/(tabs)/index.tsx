@@ -1,8 +1,9 @@
 import React from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  RefreshControl, Dimensions,
+  RefreshControl, Dimensions, Image,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -49,12 +50,17 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingBottom: SPACING.xxl }}
       >
         {/* Hero header */}
-        <View style={{
-          backgroundColor: COLORS.primary,
-          paddingHorizontal: SPACING.xl,
-          paddingTop: SPACING.lg,
-          paddingBottom: 40,
-        }}>
+        <LinearGradient
+          colors={['#1C1528', '#2D1B5E', '#1C1528']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            paddingHorizontal: SPACING.xl,
+            paddingTop: SPACING.lg,
+            paddingBottom: 40,
+            overflow: 'hidden',
+          }}
+        >
           <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
             {new Date().toLocaleDateString('en-NG', { weekday: 'long', month: 'long', day: 'numeric' })}
           </Text>
@@ -86,7 +92,7 @@ export default function HomeScreen() {
               {isPlanner ? 'Create Event with AI' : 'Plan My Event Free'}
             </Text>
           </TouchableOpacity>
-        </View>
+        </LinearGradient>
 
         <View style={{ padding: SPACING.lg, marginTop: -20 }}>
           {/* Stats row — planners only */}

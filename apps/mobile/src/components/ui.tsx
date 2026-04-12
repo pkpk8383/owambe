@@ -3,6 +3,7 @@ import {
   View, Text, TouchableOpacity, TextInput, ActivityIndicator,
   StyleSheet, ViewStyle, TextStyle, TouchableOpacityProps,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../utils/theme';
 
 // ─── BUTTON ──────────────────────────────────────────
@@ -37,6 +38,56 @@ export function Button({
   const s = sizeStyles[size];
   const isDisabled = disabled || loading;
 
+  const isPrimary = variant === 'primary';
+  const isAccent = variant === 'accent';
+
+  const inner = (
+    <>
+      {loading ? (
+        <ActivityIndicator size="small" color={v.text} />
+      ) : icon}
+      <Text style={{ fontSize: s.fontSize, fontWeight: '700', color: v.text, letterSpacing: 0.2 }}>
+        {title}
+      </Text>
+    </>
+  );
+
+  if (isPrimary) {
+    return (
+      <TouchableOpacity
+        {...props}
+        disabled={isDisabled}
+        activeOpacity={0.82}
+        style={[
+          {
+            borderRadius: RADIUS.lg,
+            overflow: 'hidden',
+            opacity: isDisabled ? 0.5 : 1,
+            alignSelf: fullWidth ? 'stretch' : 'flex-start',
+            ...SHADOWS.md,
+          },
+          style as ViewStyle,
+        ]}
+      >
+        <LinearGradient
+          colors={['#7C3AED', '#6C2BD9', '#5B21B6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            paddingVertical: s.paddingVertical,
+            paddingHorizontal: s.paddingHorizontal,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+          }}
+        >
+          {inner}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <TouchableOpacity
       {...props}
@@ -49,7 +100,7 @@ export function Button({
           borderColor: v.border,
           paddingVertical: s.paddingVertical,
           paddingHorizontal: s.paddingHorizontal,
-          borderRadius: RADIUS.md,
+          borderRadius: RADIUS.lg,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
@@ -60,12 +111,7 @@ export function Button({
         style as ViewStyle,
       ]}
     >
-      {loading ? (
-        <ActivityIndicator size="small" color={v.text} />
-      ) : icon}
-      <Text style={{ fontSize: s.fontSize, fontWeight: '700', color: v.text, letterSpacing: 0.2 }}>
-        {title}
-      </Text>
+      {inner}
     </TouchableOpacity>
   );
 }

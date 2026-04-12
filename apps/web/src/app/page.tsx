@@ -7,9 +7,7 @@ export default function HomePage() {
       {/* Nav */}
       <nav className="bg-white border-b border-[var(--border)] sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center gap-4">
-          <div className="font-bold text-[18px] text-[var(--dark)]">
-            event<span className="text-[var(--accent2)]">flow</span>
-          </div>
+          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-9 w-auto" />
           <div className="flex-1" />
           <div className="hidden md:flex items-center gap-2">
             <Link href="/vendors" className="px-3 py-1.5 text-sm text-[var(--mid)] hover:text-[var(--dark)] rounded-lg hover:bg-[var(--bg)] transition-colors">Browse Vendors</Link>
@@ -144,7 +142,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-[var(--border)] py-8">
         <div className="max-w-6xl mx-auto px-5 flex items-center justify-between">
-          <div className="font-bold text-[var(--dark)]">event<span className="text-[var(--accent2)]">flow</span></div>
+          <img src="/owambe-logo-sm.png" alt="Owambe" className="h-6 w-auto" />
           <div className="text-xs text-[var(--muted)]">© 2026 Owambe.com · Lagos, Nigeria 🇳🇬</div>
           <div className="flex gap-4 text-xs text-[var(--muted)]">
             <Link href="/terms" className="hover:text-[var(--dark)]">Terms</Link>

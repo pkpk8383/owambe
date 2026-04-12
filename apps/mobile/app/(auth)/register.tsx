@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, KeyboardAvoidingView,
-  Platform, ScrollView, Alert,
+  Platform, ScrollView, Alert, Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -58,6 +58,10 @@ export default function RegisterScreen() {
           <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: SPACING.md }}>
             <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>← Back</Text>
           </TouchableOpacity>
+          <Image
+            source={require('../../assets/owambe-logo-auth.png')}
+            style={{ height: 40, width: undefined, aspectRatio: 148 / 60, resizeMode: 'contain', marginBottom: 10 }}
+          />
           <Text style={{ fontSize: 26, fontWeight: '800', color: COLORS.white }}>Create account</Text>
           <Text style={{ color: 'rgba(255,255,255,0.65)', marginTop: 4, fontSize: 14 }}>
             Join 1,000+ event professionals on Owambe

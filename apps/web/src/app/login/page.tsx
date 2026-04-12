@@ -54,10 +54,8 @@ export default function LoginPage() {
       {/* Left: Brand panel */}
       <div className="hidden lg:flex flex-col justify-between w-[420px] bg-[var(--dark)] p-12 flex-shrink-0">
         <div>
-          <div className="font-bold text-2xl text-white mb-1">
-            event<span className="text-[var(--accent2)]">flow</span>
-          </div>
-          <div className="text-xs text-white/30 uppercase tracking-[2px]">Owambe Platform</div>
+          <img src="/owambe-logo-auth.png" alt="Owambe" className="h-12 w-auto mb-2" />
+          <div className="text-xs text-white/30 uppercase tracking-[2px] mt-1">Nigeria's Event Platform</div>
         </div>
         <div>
           <blockquote className="text-white/70 text-lg font-light leading-relaxed mb-6">

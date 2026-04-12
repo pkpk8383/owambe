@@ -4,31 +4,34 @@
 
 @layer base {
   :root {
-    /* Surfaces */
-    --bg: #F5F2EB;
-    --surface: #FDFAF4;
-    --card: #FFFFFF;
+    /* ── Surfaces ─────────────────────────────────────── */
+    --bg:      #FAF9FC;          /* very light lavender-white */
+    --surface: #FFFFFF;
+    --card:    #FFFFFF;
 
-    /* Text */
-    --dark: #1A1612;
-    --mid: #3D3730;
-    --muted: #9A9080;
+    /* ── Text ─────────────────────────────────────────── */
+    --dark:  #1C1528;            /* deep purple-black */
+    --mid:   #3D3452;            /* purple-tinted mid */
+    --muted: #8B82A0;            /* muted lavender-grey */
 
-    /* Borders */
-    --border: #E2DDD5;
+    /* ── Borders ──────────────────────────────────────── */
+    --border: #E5E0F0;           /* soft purple-tinted border */
 
-    /* Brand */
-    --accent: #2D6A4F;        /* primary green */
-    --accent2: #E76F2A;       /* orange CTA */
-    --accent3: #7B61FF;       /* purple (analytics, AI) */
-    --danger: #E63946;
+    /* ── Owambe Brand ─────────────────────────────────── */
+    --accent:  #6C2BD9;          /* primary purple */
+    --accent2: #C9A227;          /* gold accent (CTA, highlights) */
+    --accent3: #9B59B6;          /* lighter purple (secondary actions) */
+    --danger:  #DC2626;          /* red — limited use only */
     --success: #059669;
     --warning: #D97706;
-    --info: #3B82F6;
+    --info:    #3B82F6;
 
-    /* Pill / chip backgrounds */
-    --pill: rgba(45, 106, 79, 0.07);   /* light green tint */
-    --pill-t: rgba(231, 111, 42, 0.08); /* light orange tint */
+    /* ── Pill / chip backgrounds ──────────────────────── */
+    --pill:   rgba(108, 43, 217, 0.08);   /* light purple tint */
+    --pill-t: rgba(201, 162, 39, 0.10);   /* light gold tint */
+
+    /* ── Sidebar ──────────────────────────────────────── */
+    --sidebar-bg: #1C1528;       /* deep purple-black */
   }
 
   * { box-sizing: border-box; }
@@ -68,10 +71,11 @@
   }
 
   .btn-accent {
-    @apply text-white font-semibold px-4 py-2 rounded-lg
+    @apply font-semibold px-4 py-2 rounded-lg
            hover:opacity-90 transition-all duration-150 active:scale-95
            inline-flex items-center gap-2;
     background-color: var(--accent2);
+    color: #1C1528;
   }
 
   .btn-ghost {
@@ -100,7 +104,7 @@
 
   /* ─── Badges ─────────────────────────────────────── */
   .badge-live {
-    @apply bg-green-100 text-green-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full;
+    @apply bg-purple-100 text-purple-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full;
   }
   .badge-draft {
     @apply bg-gray-100 text-gray-500 text-[11px] font-bold px-2.5 py-0.5 rounded-full;
@@ -109,10 +113,10 @@
     @apply bg-red-100 text-red-600 text-[11px] font-bold px-2.5 py-0.5 rounded-full;
   }
   .badge-upcoming {
-    @apply bg-yellow-100 text-yellow-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full;
+    @apply bg-amber-100 text-amber-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full;
   }
   .badge-confirmed {
-    @apply bg-emerald-100 text-emerald-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full;
+    @apply bg-purple-100 text-purple-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full;
   }
   .badge-pending {
     @apply bg-amber-100 text-amber-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full;
@@ -148,7 +152,10 @@
            transition-all duration-150 text-white/50 text-sm font-medium;
   }
   .nav-item:hover { @apply bg-white/[0.06] text-white/90; }
-  .nav-item.active { @apply bg-white/[0.12] text-white; }
+  .nav-item.active {
+    background: rgba(108, 43, 217, 0.25);
+    color: white;
+  }
 
   /* ─── Tables ─────────────────────────────────────── */
   .table-header {
@@ -188,10 +195,13 @@
 
   /* Gradients */
   .gradient-primary {
-    background: linear-gradient(135deg, #2D6A4F 0%, #1A4D38 100%);
+    background: linear-gradient(135deg, #6C2BD9 0%, #4A1D96 100%);
   }
   .gradient-accent {
-    background: linear-gradient(135deg, #E76F2A 0%, #C1440E 100%);
+    background: linear-gradient(135deg, #C9A227 0%, #A07A10 100%);
+  }
+  .gradient-hero {
+    background: linear-gradient(135deg, #1C1528 0%, #2D1B69 50%, #1C1528 100%);
   }
 
   /* Scrollbar hiding */

@@ -22,13 +22,13 @@ const SLIDES = [
     emoji: '🏛',
     title: '200+ verified\nLagos vendors',
     body: 'Venues, catering, photography, AV, makeup, décor — all verified, all in one place.',
-    bg: '#1A4D38',
+    bg: '#4A1D96',
   },
   {
     emoji: '🔒',
     title: 'Pay with\nconfidence',
     body: 'Deposits held in escrow via Paystack. Vendors get paid after your event. You\'re protected.',
-    bg: '#E76F2A',
+    bg: '#A07A10',
   },
   {
     emoji: '📱',
@@ -66,7 +66,7 @@ export default function WelcomeScreen() {
         {SLIDES.map((slide, i) => (
           <View key={i} style={{ width, flex: 1, backgroundColor: slide.bg }}>
             <LinearGradient
-              colors={[slide.bg, slide.bg + 'CC', '#1A1612']}
+              colors={[slide.bg, slide.bg + 'CC', '#1C1528']}
               style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: SPACING.xl }}
             >
               <Text style={{ fontSize: 96, marginBottom: SPACING.xl }}>{slide.emoji}</Text>
@@ -91,7 +91,7 @@ export default function WelcomeScreen() {
       <View style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         padding: SPACING.xl, paddingBottom: 48,
-        backgroundColor: '#1A1612',
+        backgroundColor: '#1C1528',
       }}>
         {/* Dots */}
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginBottom: SPACING.lg }}>

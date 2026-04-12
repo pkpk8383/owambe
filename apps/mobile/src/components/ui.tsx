@@ -183,10 +183,10 @@ interface BadgeProps {
 }
 
 const BADGE_COLORS: Record<string, { bg: string; text: string }> = {
-  confirmed: { bg: '#D1FAE5', text: '#065F46' },
+  confirmed: { bg: '#EDE9FF', text: '#4A1D96' },
   pending: { bg: '#FEF3C7', text: '#92400E' },
   cancelled: { bg: '#FEE2E2', text: '#991B1B' },
-  live: { bg: '#D1FAE5', text: '#065F46' },
+  live: { bg: '#EDE9FF', text: '#4A1D96' },
   draft: { bg: '#F3F4F6', text: '#6B7280' },
   published: { bg: '#DBEAFE', text: '#1E40AF' },
   ended: { bg: '#F3F4F6', text: '#6B7280' },

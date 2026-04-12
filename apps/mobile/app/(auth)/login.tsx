@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, KeyboardAvoidingView,
-  Platform, ScrollView, Alert,
+  Platform, ScrollView, Alert, Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -51,12 +51,14 @@ export default function LoginScreen() {
           paddingTop: 80,
           paddingBottom: SPACING.xl,
           paddingHorizontal: SPACING.xl,
+          alignItems: 'flex-start',
         }}>
-          <Text style={{ fontSize: 28, fontWeight: '900', color: COLORS.white, letterSpacing: -0.5 }}>
-            event<Text style={{ color: COLORS.accent }}>flow</Text>
-          </Text>
-          <Text style={{ color: 'rgba(255,255,255,0.7)', marginTop: 6, fontSize: 15 }}>
-            Nigeria's smartest event platform
+          <Image
+            source={require('../../assets/owambe-logo-auth.png')}
+            style={{ height: 48, width: undefined, aspectRatio: 148 / 60, resizeMode: 'contain', marginBottom: 8 }}
+          />
+          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
+            Nigeria's Event Platform
           </Text>
         </View>
 

@@ -8,7 +8,7 @@ const PLANS = [
     name: 'Starter',
     price: 'Free',
     period: 'forever',
-    color: '#9A9080',
+    color: '#8B82A0',
     description: 'For your first few events. No card required.',
     featured: false,
     features: [
@@ -28,7 +28,7 @@ const PLANS = [
     name: 'Growth',
     price: '₦150,000',
     period: '/month',
-    color: '#2D6A4F',
+    color: '#6C2BD9',
     description: 'Everything growing teams need. Flat monthly fee.',
     featured: true,
     features: [
@@ -48,7 +48,7 @@ const PLANS = [
     name: 'Scale',
     price: '₦450,000',
     period: '/month',
-    color: '#E76F2A',
+    color: '#C9A227',
     description: 'For agencies running high-volume programs.',
     featured: false,
     features: [

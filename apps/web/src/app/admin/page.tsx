@@ -93,8 +93,8 @@ function OverviewTab() {
   const stats = data?.stats;
 
   const CARDS = [
-    { label: 'Total Users', value: stats?.totalUsers ?? '—', icon: <Users size={16} />, color: '#2D6A4F' },
-    { label: 'Verified Vendors', value: stats?.totalVendors ?? '—', icon: <Store size={16} />, color: '#E76F2A' },
+    { label: 'Total Users', value: stats?.totalUsers ?? '—', icon: <Users size={16} />, color: '#6C2BD9' },
+    { label: 'Verified Vendors', value: stats?.totalVendors ?? '—', icon: <Store size={16} />, color: '#C9A227' },
     { label: 'Total Events', value: stats?.totalEvents ?? '—', icon: <BarChart2 size={16} />, color: '#7B61FF' },
     { label: 'Active Bookings', value: stats?.totalBookings ?? '—', icon: <CheckCircle size={16} />, color: '#059669' },
     { label: 'Total GMV', value: stats ? formatNGN(stats.totalGMV, true) : '—', icon: <DollarSign size={16} />, color: '#0EA5E9' },
@@ -639,10 +639,10 @@ function ContractsAdminTab() {
     <div className="animate-fade-up">
       <div className="grid grid-cols-4 gap-3 mb-5">
         {[
-          { label: 'Total Contracts', value: stats.total, color: '#9A9080' },
+          { label: 'Total Contracts', value: stats.total, color: '#8B82A0' },
           { label: 'Fully Signed', value: stats.signed, color: '#059669' },
           { label: 'Awaiting Signature', value: stats.pending, color: '#D97706' },
-          { label: 'Voided', value: stats.voided, color: '#E63946' },
+          { label: 'Voided', value: stats.voided, color: '#DC2626' },
         ].map(s => (
           <div key={s.label} className="stat-card">
             <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-xl" style={{ background: s.color }} />

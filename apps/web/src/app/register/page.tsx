@@ -68,9 +68,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-[var(--surface)] p-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="font-bold text-2xl text-[var(--dark)] mb-1">
-            event<span className="text-[var(--accent2)]">flow</span>
-          </div>
+          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-10 w-auto mx-auto mb-2" />
           <h1 className="font-bold text-xl mb-1">Create your account</h1>
           <p className="text-sm text-[var(--muted)]">
             Already have one?{' '}

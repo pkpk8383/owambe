@@ -89,13 +89,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className="w-[212px] bg-[var(--dark)] flex flex-col flex-shrink-0 overflow-y-auto no-scrollbar">
         {/* Logo */}
         <div className="px-4 py-5 border-b border-white/[0.08] flex-shrink-0">
-          <Link href="/dashboard">
-            <div className="font-bold text-[19px] text-white tracking-tight">
-              event<span className="text-[var(--accent2)]">flow</span>
-            </div>
-            <div className="text-[9px] text-white/30 uppercase tracking-[2px] mt-0.5">
-              Owambe Platform
-            </div>
+          <Link href="/dashboard" className="flex items-center gap-2.5">
+            <img src="/owambe-logo-nav.png" alt="Owambe" className="h-8 w-auto" />
           </Link>
         </div>
 
@@ -118,7 +113,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <item.icon size={15} className="shrink-0" />
                     <span>{item.label}</span>
                     {item.badge && (
-                      <span className="ml-auto bg-[var(--accent2)] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                      <span className="ml-auto bg-[var(--accent2)] text-[#1C1528] text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                         {item.badge}
                       </span>
                     )}

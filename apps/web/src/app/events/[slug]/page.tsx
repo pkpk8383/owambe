@@ -111,7 +111,7 @@ export default function PublicEventPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)]">
       {/* Header */}
-      <div style={{ background: `linear-gradient(135deg, #2D6A4F, #1A4D38)` }}
+      <div style={{ background: `linear-gradient(135deg, #6C2BD9, #4A1D96)` }}
         className="px-6 py-10">
         <div className="max-w-3xl mx-auto">
           <Link href="/" className="text-white/60 text-sm hover:text-white transition-colors">

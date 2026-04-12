@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
     opacity: 0.18,
   },
   logo: {
-    height: 56,
-    width: 56 * 2.117,
+    height: 68,
+    width: 68 * 2.117,
     marginBottom: SPACING.sm,
   },
   tagline: {

@@ -210,8 +210,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heroLogo: {
-    height: 64,
-    width: 64 * 2.117,
+    height: 80,
+    width: 80 * 2.117,
   },
   emojiContainer: {
     width: 100,

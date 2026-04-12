@@ -55,7 +55,7 @@ export default function LoginPage() {
 
         {/* Top: Logo */}
         <div className="relative z-10 p-12 pb-0">
-          <img src="/owambe-logo-auth.png" alt="Owambe" className="h-14 w-auto mb-4" />
+          <img src="/owambe-logo-auth.png" alt="Owambe" className="h-16 w-auto mb-4" />
           <p className="text-white/40 text-xs uppercase tracking-[2.5px] font-medium">
             Nigeria&apos;s Event Platform
           </p>
@@ -93,7 +93,7 @@ export default function LoginPage() {
 
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-center py-8 px-6 border-b border-[var(--border)] bg-white">
-          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-10 w-auto" />
+          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-12 w-auto" />
         </div>
 
         <div className="flex-1 flex items-center justify-center p-8">

@@ -70,7 +70,7 @@ export default function RegisterPage() {
       {/* ── Top nav bar ────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-[var(--border)] px-6 py-4 flex items-center justify-between">
         <Link href="/">
-          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-10 w-auto" />
+          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-12 w-auto" />
         </Link>
         <p className="text-sm text-[var(--muted)]">
           Already have an account?{' '}

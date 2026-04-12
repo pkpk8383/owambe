@@ -46,7 +46,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
       <aside className="w-[200px] bg-[var(--dark)] flex flex-col flex-shrink-0">
         <div className="px-4 py-5 border-b border-white/[0.08]">
           <Link href="/vendor" className="flex flex-col gap-0.5">
-            <img src="/owambe-logo-nav.png" alt="Owambe" className="h-10 w-auto" />
+            <img src="/owambe-logo-nav.png" alt="Owambe" className="h-12 w-auto" />
             <div className="text-[9px] text-white/30 uppercase tracking-[2px]">Vendor Portal</div>
           </Link>
         </div>

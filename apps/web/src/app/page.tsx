@@ -7,15 +7,16 @@ export default function HomePage() {
 
       {/* ── Navbar ─────────────────────────────────────────────────────── */}
       <nav className="bg-white/95 backdrop-blur-sm border-b border-[var(--border)] sticky top-0 z-20 shadow-sm">
-        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center gap-4">
+        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center gap-3">
           <Link href="/" className="flex-shrink-0">
             <img
               src="/owambe-logo-nav.png"
               alt="Owambe"
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
           </Link>
           <div className="flex-1" />
+          {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
             <Link
               href="/vendors"
@@ -30,56 +31,155 @@ export default function HomePage() {
               <Sparkles size={13} /> Plan with AI
             </Link>
           </div>
-          <div className="flex gap-2 ml-2">
-            <Link href="/login" className="btn-secondary text-sm px-4 py-2">Sign in</Link>
-            <Link href="/register" className="btn-primary text-sm px-4 py-2">Get started free</Link>
+          {/* CTA buttons — responsive */}
+          <div className="flex gap-2 ml-1">
+            {/* Sign in — text link on mobile, outlined button on desktop */}
+            <Link
+              href="/login"
+              className="hidden sm:inline-flex btn-secondary text-sm px-4 py-2"
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/login"
+              className="sm:hidden text-sm font-medium text-[var(--mid)] px-2 py-2 hover:text-[var(--dark)] transition-colors"
+            >
+              Sign in
+            </Link>
+            {/* Purple = product/auth CTA */}
+            <Link
+              href="/register"
+              className="btn-primary text-sm px-3 sm:px-5 py-2"
+            >
+              <span className="hidden sm:inline">Get started free</span>
+              <span className="sm:hidden">Start free</span>
+            </Link>
           </div>
         </div>
       </nav>
 
       {/* ── Hero ───────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
-        {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--bg)] via-[#F0EAFA] to-[var(--bg)] pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[var(--accent)] opacity-[0.04] rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
 
-        <div className="relative max-w-6xl mx-auto px-5 pt-20 pb-24 text-center">
-          <div className="inline-flex items-center gap-2 bg-[var(--pill)] text-[var(--accent)] text-xs font-semibold px-4 py-2 rounded-full mb-8 border border-[rgba(108,43,217,0.15)]">
+        {/* Rich layered background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FAF9FC] via-[#EDE9FF] to-[#F8F4FF] pointer-events-none" />
+
+        {/* Decorative dot-grid pattern */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(108,43,217,0.12) 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+            opacity: 0.5,
+          }}
+        />
+
+        {/* Large central radial glow behind headline */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[480px] bg-[var(--accent)] opacity-[0.08] rounded-full blur-[90px] pointer-events-none" />
+
+        {/* Top-right gold accent orb */}
+        <div className="absolute top-0 right-0 w-[520px] h-[520px] bg-[var(--accent2)] opacity-[0.07] rounded-full blur-[70px] -translate-y-1/3 translate-x-1/4 pointer-events-none" />
+
+        {/* Bottom-left subtle purple orb */}
+        <div className="absolute bottom-0 left-0 w-[400px] h-[300px] bg-[var(--accent)] opacity-[0.05] rounded-full blur-[60px] translate-y-1/4 -translate-x-1/4 pointer-events-none" />
+
+        {/* Floating decorative emoji — desktop only */}
+        <div className="absolute top-16 left-[7%] text-4xl opacity-25 select-none pointer-events-none hidden xl:block" style={{ animation: 'floatA 6s ease-in-out infinite' }}>🎉</div>
+        <div className="absolute top-28 right-[9%] text-3xl opacity-20 select-none pointer-events-none hidden xl:block" style={{ animation: 'floatB 7s ease-in-out infinite' }}>🥂</div>
+        <div className="absolute bottom-24 left-[11%] text-3xl opacity-20 select-none pointer-events-none hidden xl:block" style={{ animation: 'floatC 5s ease-in-out infinite' }}>🎊</div>
+        <div className="absolute bottom-20 right-[7%] text-4xl opacity-25 select-none pointer-events-none hidden xl:block" style={{ animation: 'floatA 8s ease-in-out infinite' }}>🎶</div>
+
+        <div className="relative max-w-6xl mx-auto px-5 pt-20 pb-28 text-center">
+
+          {/* Launch badge */}
+          <div className="inline-flex items-center gap-2 bg-[var(--pill)] text-[var(--accent)] text-xs font-semibold px-4 py-2 rounded-full mb-8 border border-[rgba(108,43,217,0.2)] shadow-sm">
             <Sparkles size={13} /> Launching in Lagos, Nigeria 🇳🇬
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--dark)] leading-[1.1] mb-6 max-w-3xl mx-auto">
-            Nigeria&apos;s smartest event planning platform
+
+          {/* Headline with gold accent on key phrase */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--dark)] leading-[1.08] mb-6 max-w-3xl mx-auto text-balance">
+            Nigeria&apos;s smartest{' '}
+            <span className="relative inline-block">
+              <span className="relative z-10" style={{ color: 'var(--accent)' }}>event planning</span>
+              <span
+                className="absolute bottom-0 left-0 right-0 rounded-full"
+                style={{
+                  height: '3px',
+                  background: 'linear-gradient(90deg, var(--accent2), var(--accent))',
+                  opacity: 0.55,
+                }}
+              />
+            </span>{' '}
+            platform
           </h1>
+
+          {/* Sub-copy */}
           <p className="text-lg text-[var(--muted)] max-w-lg mx-auto mb-10 leading-relaxed">
             AI plans your entire event in minutes. Book verified venues, catering, photography, makeup, AV and more — all within your budget.
           </p>
+
+          {/* CTA row — Gold = primary marketing, White/outline = secondary */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <Link
               href="/plan"
-              className="btn-accent px-8 py-3.5 text-base flex items-center gap-2 shadow-lg shadow-[rgba(201,162,39,0.25)] hover:shadow-xl hover:shadow-[rgba(201,162,39,0.3)] transition-all"
+              className="btn-accent px-8 py-3.5 text-base flex items-center gap-2 shadow-xl hover:-translate-y-0.5 transition-all"
+              style={{ boxShadow: '0 8px 24px rgba(201,162,39,0.28)' }}
             >
               <Sparkles size={16} /> Plan My Event Free
             </Link>
-            <Link href="/vendors" className="btn-secondary px-8 py-3.5 text-base flex items-center gap-2">
+            <Link
+              href="/vendors"
+              className="btn-secondary px-8 py-3.5 text-base flex items-center gap-2 hover:-translate-y-0.5 transition-all"
+            >
               Browse Vendors <ArrowRight size={15} />
             </Link>
           </div>
-          <p className="text-xs text-[var(--muted)] mt-5">No account needed to start · 200+ verified vendors in Lagos</p>
+
+          <p className="text-xs text-[var(--muted)] mt-5 opacity-70">No account needed to start · 200+ verified vendors in Lagos</p>
+
+          {/* Category dot-list */}
+          <div className="mt-8 flex items-center justify-center gap-5 flex-wrap">
+            {['Venues', 'Catering', 'Photography', 'AV & Production', 'Décor', 'Entertainment'].map(cat => (
+              <span key={cat} className="text-xs text-[var(--muted)] flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: 'var(--accent)', opacity: 0.6 }} />
+                {cat}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── Stats bar ──────────────────────────────────────────────────── */}
-      <section className="bg-[var(--dark)] py-12">
-        <div className="max-w-4xl mx-auto px-5 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
+      <section className="bg-[var(--dark)] py-16 relative overflow-hidden">
+        {/* Subtle gold shimmer overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(201,162,39,0.04) 50%, transparent 100%)' }}
+        />
+        <div className="max-w-4xl mx-auto px-5 grid grid-cols-2 sm:grid-cols-4 text-center relative">
           {[
             { val: '200+', label: 'Verified vendors', sub: 'Lagos' },
             { val: '93%', label: 'Cheaper than Cvent', sub: 'for planners' },
             { val: '8', label: 'Vendor categories', sub: 'all in one' },
             { val: '₦0', label: 'To list as vendor', sub: 'commission only' },
-          ].map(s => (
-            <div key={s.val}>
-              <div className="font-bold text-3xl text-[var(--accent2)] mb-1">{s.val}</div>
-              <div className="text-sm text-white font-medium">{s.label}</div>
+          ].map((s, i) => (
+            <div
+              key={s.val}
+              className="py-6 px-4"
+              style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,0.07)' : 'none' }}
+            >
+              {/* Gold accent bar */}
+              <div
+                className="mx-auto mb-3 rounded-full"
+                style={{
+                  width: '32px',
+                  height: '3px',
+                  background: 'linear-gradient(90deg, var(--accent2), var(--accent))',
+                  opacity: 0.85,
+                }}
+              />
+              <div className="text-4xl font-bold text-white mb-1 leading-none tracking-tight">{s.val}</div>
+              <div className="text-sm font-semibold text-white/80 mb-0.5">{s.label}</div>
               <div className="text-xs text-white/40">{s.sub}</div>
             </div>
           ))}
@@ -88,21 +188,21 @@ export default function HomePage() {
 
       {/* ── How it works ───────────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-5 py-20">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">Plan your event in 4 steps</h2>
-        <p className="text-center text-[var(--muted)] text-sm mb-12">From idea to booked vendors in under 10 minutes</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">Plan your event in 3 steps</h2>
+        <p className="text-center text-sm text-[var(--muted)] mb-12">From idea to booked vendors in under 10 minutes</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {[
-            { n: 1, icon: '💬', title: 'Tell the AI', desc: 'Describe your event, location, date and budget in plain English' },
-            { n: 2, icon: '🤖', title: 'AI finds vendors', desc: 'We match verified vendors near you within your budget' },
-            { n: 3, icon: '📋', title: 'Pick your plan', desc: 'Choose from 3 packages — budget, standard, or premium' },
-            { n: 4, icon: '✅', title: 'Book & relax', desc: 'Pay deposit, we hold it in escrow until your event is done' },
+            { n: '01', icon: '✨', title: 'Describe your event', desc: 'Tell our AI your event type, guest count, date, and budget. Takes 60 seconds.' },
+            { n: '02', icon: '🔍', title: 'AI builds your plan', desc: 'We match you with verified vendors across all 8 categories, ranked by fit and price.' },
+            { n: '03', icon: '✅', title: 'Book with confidence', desc: 'Pay securely via escrow. Vendors only get paid after your event. Zero risk.' },
           ].map(step => (
-            <div key={step.n} className="text-center">
-              <div className="w-12 h-12 rounded-2xl bg-[var(--pill)] border border-[rgba(108,43,217,0.15)] flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm">
+            <div key={step.n} className="card p-6 relative group hover:shadow-lg hover:border-[rgba(108,43,217,0.25)] hover:-translate-y-1 transition-all duration-200">
+              <div className="absolute top-4 right-4 text-[11px] font-bold text-[var(--muted)] opacity-35 font-mono">{step.n}</div>
+              <div className="w-12 h-12 rounded-2xl bg-[var(--pill)] border border-[rgba(108,43,217,0.15)] flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm group-hover:scale-105 transition-transform">
                 {step.icon}
               </div>
-              <div className="font-bold text-sm mb-1.5 text-[var(--dark)]">{step.title}</div>
-              <div className="text-xs text-[var(--muted)] leading-relaxed">{step.desc}</div>
+              <h3 className="font-bold text-base text-center mb-2">{step.title}</h3>
+              <p className="text-sm text-[var(--muted)] leading-relaxed text-center">{step.desc}</p>
             </div>
           ))}
         </div>
@@ -140,13 +240,19 @@ export default function HomePage() {
       <section className="max-w-5xl mx-auto px-5 py-20">
         <div className="bg-[var(--dark)] rounded-3xl p-8 sm:p-12 grid grid-cols-1 sm:grid-cols-2 gap-8 items-center overflow-hidden relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent)] opacity-10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-[var(--accent)] opacity-[0.06] rounded-full blur-2xl pointer-events-none" />
           <div className="relative">
-            <div className="text-[var(--accent2)] font-semibold text-xs uppercase tracking-widest mb-3">For Vendors & Businesses</div>
+            <div className="text-[var(--accent2)] font-semibold text-xs uppercase tracking-widest mb-3">For Vendors &amp; Businesses</div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 leading-tight">List your business free. Earn more.</h2>
             <p className="text-white/60 text-sm leading-relaxed mb-6">
               Zero upfront cost. 0% commission for your first 90 days. Guaranteed payment via escrow. We bring the clients to you.
             </p>
-            <Link href="/vendor/settings" className="btn-accent inline-flex items-center gap-2 shadow-lg shadow-[rgba(201,162,39,0.2)]">
+            {/* Gold = primary marketing CTA */}
+            <Link
+              href="/vendor/settings"
+              className="btn-accent inline-flex items-center gap-2 hover:-translate-y-0.5 transition-all"
+              style={{ boxShadow: '0 6px 20px rgba(201,162,39,0.22)' }}
+            >
               List My Business Free <Zap size={14} />
             </Link>
           </div>
@@ -157,7 +263,7 @@ export default function HomePage() {
               { icon: <Star size={18} />, title: 'Build reputation', desc: 'Verified reviews from real clients' },
               { icon: <Sparkles size={18} />, title: 'AI profile builder', desc: 'We write your listing for you' },
             ].map(f => (
-              <div key={f.title} className="bg-white/[0.06] rounded-xl p-3.5 border border-white/[0.06]">
+              <div key={f.title} className="bg-white/[0.06] rounded-xl p-3.5 border border-white/[0.06] hover:bg-white/[0.09] transition-colors">
                 <div className="text-[var(--accent2)] mb-2">{f.icon}</div>
                 <div className="text-white text-xs font-semibold mb-0.5">{f.title}</div>
                 <div className="text-white/40 text-[11px] leading-relaxed">{f.desc}</div>
@@ -170,7 +276,7 @@ export default function HomePage() {
       {/* ── Footer ─────────────────────────────────────────────────────── */}
       <footer className="border-t border-[var(--border)] py-8 bg-white">
         <div className="max-w-6xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-8 w-auto" />
+          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-10 w-auto" />
           <div className="text-xs text-[var(--muted)]">© 2026 Owambe.com · Lagos, Nigeria 🇳🇬</div>
           <div className="flex gap-5 text-xs text-[var(--muted)]">
             <Link href="/terms" className="hover:text-[var(--dark)] transition-colors">Terms</Link>
@@ -180,6 +286,21 @@ export default function HomePage() {
         </div>
       </footer>
 
+      {/* Floating emoji keyframes */}
+      <style>{`
+        @keyframes floatA {
+          0%, 100% { transform: translateY(0px) rotate(-3deg); }
+          50% { transform: translateY(-14px) rotate(3deg); }
+        }
+        @keyframes floatB {
+          0%, 100% { transform: translateY(0px) rotate(2deg); }
+          50% { transform: translateY(-10px) rotate(-2deg); }
+        }
+        @keyframes floatC {
+          0%, 100% { transform: translateY(0px) rotate(-2deg); }
+          50% { transform: translateY(-18px) rotate(4deg); }
+        }
+      `}</style>
     </div>
   );
 }

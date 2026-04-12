@@ -12,7 +12,7 @@ export default function HomePage() {
             <img
               src="/owambe-logo-nav.png"
               alt="Owambe"
-              className="h-12 w-auto"
+              className="h-14 w-auto"
             />
           </Link>
           <div className="flex-1" />
@@ -62,32 +62,40 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
 
         {/* Rich layered background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#FAF9FC] via-[#EDE9FF] to-[#F8F4FF] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#F5F0FF] via-[#E8E0FF] to-[#F0EBFF] pointer-events-none" />
 
         {/* Decorative dot-grid pattern */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(108,43,217,0.12) 1px, transparent 1px)',
-            backgroundSize: '32px 32px',
-            opacity: 0.5,
+            backgroundImage: 'radial-gradient(circle, rgba(108,43,217,0.10) 1px, transparent 1px)',
+            backgroundSize: '36px 36px',
+            opacity: 0.3,
           }}
         />
 
         {/* Large central radial glow behind headline */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[480px] bg-[var(--accent)] opacity-[0.08] rounded-full blur-[90px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[480px] bg-[var(--accent)] opacity-[0.12] rounded-full blur-[90px] pointer-events-none" />
 
         {/* Top-right gold accent orb */}
-        <div className="absolute top-0 right-0 w-[520px] h-[520px] bg-[var(--accent2)] opacity-[0.07] rounded-full blur-[70px] -translate-y-1/3 translate-x-1/4 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[520px] h-[520px] bg-[var(--accent2)] opacity-[0.08] rounded-full blur-[70px] -translate-y-1/3 translate-x-1/4 pointer-events-none" />
 
         {/* Bottom-left subtle purple orb */}
-        <div className="absolute bottom-0 left-0 w-[400px] h-[300px] bg-[var(--accent)] opacity-[0.05] rounded-full blur-[60px] translate-y-1/4 -translate-x-1/4 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[300px] bg-[var(--accent)] opacity-[0.06] rounded-full blur-[60px] translate-y-1/4 -translate-x-1/4 pointer-events-none" />
 
-        {/* Floating decorative emoji — desktop only */}
-        <div className="absolute top-16 left-[7%] text-4xl opacity-25 select-none pointer-events-none hidden xl:block" style={{ animation: 'floatA 6s ease-in-out infinite' }}>🎉</div>
-        <div className="absolute top-28 right-[9%] text-3xl opacity-20 select-none pointer-events-none hidden xl:block" style={{ animation: 'floatB 7s ease-in-out infinite' }}>🥂</div>
-        <div className="absolute bottom-24 left-[11%] text-3xl opacity-20 select-none pointer-events-none hidden xl:block" style={{ animation: 'floatC 5s ease-in-out infinite' }}>🎊</div>
-        <div className="absolute bottom-20 right-[7%] text-4xl opacity-25 select-none pointer-events-none hidden xl:block" style={{ animation: 'floatA 8s ease-in-out infinite' }}>🎶</div>
+        {/* Geometric accent — top-right concentric rings (desktop only) */}
+        <svg className="absolute top-8 right-[5%] hidden xl:block pointer-events-none" width="160" height="160" viewBox="0 0 160 160" fill="none" aria-hidden="true">
+          <circle cx="80" cy="80" r="72" stroke="rgba(108,43,217,0.10)" strokeWidth="1.5" fill="none" />
+          <circle cx="80" cy="80" r="50" stroke="rgba(108,43,217,0.07)" strokeWidth="1" fill="none" />
+          <circle cx="80" cy="80" r="28" stroke="rgba(201,162,39,0.12)" strokeWidth="1" fill="none" />
+        </svg>
+
+        {/* Geometric accent — bottom-left dot grid (desktop only) */}
+        <svg className="absolute bottom-12 left-[4%] hidden xl:block pointer-events-none" width="112" height="72" viewBox="0 0 112 72" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="2.5" fill="rgba(201,162,39,0.20)" /><circle cx="36" cy="12" r="2.5" fill="rgba(201,162,39,0.16)" /><circle cx="60" cy="12" r="2.5" fill="rgba(201,162,39,0.12)" /><circle cx="84" cy="12" r="2.5" fill="rgba(201,162,39,0.08)" />
+          <circle cx="12" cy="36" r="2.5" fill="rgba(201,162,39,0.16)" /><circle cx="36" cy="36" r="2.5" fill="rgba(201,162,39,0.12)" /><circle cx="60" cy="36" r="2.5" fill="rgba(201,162,39,0.08)" /><circle cx="84" cy="36" r="2.5" fill="rgba(201,162,39,0.05)" />
+          <circle cx="12" cy="60" r="2.5" fill="rgba(201,162,39,0.10)" /><circle cx="36" cy="60" r="2.5" fill="rgba(201,162,39,0.07)" /><circle cx="60" cy="60" r="2.5" fill="rgba(201,162,39,0.04)" />
+        </svg>
 
         <div className="relative max-w-6xl mx-auto px-5 pt-20 pb-28 text-center">
 
@@ -165,22 +173,22 @@ export default function HomePage() {
           ].map((s, i) => (
             <div
               key={s.val}
-              className="py-6 px-4"
-              style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,0.07)' : 'none' }}
+              className="py-8 px-4"
+              style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}
             >
               {/* Gold accent bar */}
               <div
                 className="mx-auto mb-3 rounded-full"
                 style={{
-                  width: '32px',
+                  width: '40px',
                   height: '3px',
                   background: 'linear-gradient(90deg, var(--accent2), var(--accent))',
                   opacity: 0.85,
                 }}
               />
-              <div className="text-4xl font-bold text-white mb-1 leading-none tracking-tight">{s.val}</div>
-              <div className="text-sm font-semibold text-white/80 mb-0.5">{s.label}</div>
-              <div className="text-xs text-white/40">{s.sub}</div>
+              <div className="text-5xl font-bold text-white mb-2 leading-none tracking-tight">{s.val}</div>
+              <div className="text-sm font-semibold text-white/90 mb-1">{s.label}</div>
+              <div className="text-xs text-white/55 tracking-wide uppercase">{s.sub}</div>
             </div>
           ))}
         </div>
@@ -276,7 +284,7 @@ export default function HomePage() {
       {/* ── Footer ─────────────────────────────────────────────────────── */}
       <footer className="border-t border-[var(--border)] py-8 bg-white">
         <div className="max-w-6xl mx-auto px-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-10 w-auto" />
+          <img src="/owambe-logo-nav.png" alt="Owambe" className="h-11 w-auto" />
           <div className="text-xs text-[var(--muted)]">© 2026 Owambe.com · Lagos, Nigeria 🇳🇬</div>
           <div className="flex gap-5 text-xs text-[var(--muted)]">
             <Link href="/terms" className="hover:text-[var(--dark)] transition-colors">Terms</Link>

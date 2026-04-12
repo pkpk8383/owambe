@@ -199,8 +199,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   logo: {
-    height: 60,
-    width: 60 * 2.117,
+    height: 69,
+    width: 69 * 2.117,
     marginBottom: SPACING.md,
   },
   headline: {

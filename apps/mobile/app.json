@@ -28,7 +28,7 @@
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.owambe.app",
-      "versionCode": 17,
+      "versionCode": 18,
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",

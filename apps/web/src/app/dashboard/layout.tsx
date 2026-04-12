@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Logo */}
         <div className="px-4 py-5 border-b border-white/[0.08] flex-shrink-0">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <img src="/owambe-logo-nav.png" alt="Owambe" className="h-8 w-auto" />
+            <img src="/owambe-logo-nav.png" alt="Owambe" className="h-10 w-auto" />
           </Link>
         </div>
 

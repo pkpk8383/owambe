@@ -6,7 +6,7 @@ export default function VendorsLayout({ children }: { children: React.ReactNode 
       <nav className="bg-white border-b border-[var(--border)] sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center gap-4">
           <Link href="/">
-            <img src="/owambe-logo-nav.png" alt="Owambe" className="h-9 w-auto" />
+            <img src="/owambe-logo-nav.png" alt="Owambe" className="h-10 w-auto" />
           </Link>
           <div className="flex-1" />
           <div className="flex items-center gap-2">

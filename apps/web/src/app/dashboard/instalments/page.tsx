@@ -9,8 +9,9 @@ import Link from 'next/link';
 import {
   Calendar, CheckCircle, XCircle, Clock, AlertTriangle,
   RefreshCw, Plus, ChevronRight, Loader2, TrendingUp,
-  CreditCard, Info, ArrowRight, Ban,
+  CreditCard, Info, ArrowRight, Ban, Lock,
 } from 'lucide-react';
+import { useAuthStore, getPlanTier, planAtLeast } from '@/store/auth.store';
 
 // ─── CONFIG ──────────────────────────────────────────
 const PLAN_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -39,6 +40,8 @@ function InstalmentCalculator({ bookingId, totalAmount, bookingRef, vendorName, 
 }) {
   const [count, setCount] = useState<3 | 6>(3);
   const [step, setStep] = useState<'select' | 'confirm'>('select');
+  const { user } = useAuthStore();
+  const isGrowthPlus = planAtLeast(user, 'GROWTH');
 
   const { data: previewData, isLoading: previewing } = useQuery({
     queryKey: ['instalment-preview', bookingId, count],
@@ -94,19 +97,35 @@ function InstalmentCalculator({ bookingId, totalAmount, bookingRef, vendorName, 
             const feeRate = FEE_RATES[n];
             const feeAmount = Math.ceil(totalAmount * (feeRate / 100));
             const monthly = Math.round((totalAmount + feeAmount) / n);
+            const locked = n === 6 && !isGrowthPlus;
             return (
               <button key={n}
-                onClick={() => setCount(n)}
-                className={`p-4 rounded-xl border-2 text-left transition-all ${
-                  count === n
+                onClick={() => {
+                  if (locked) {
+                    window.location.href = '/dashboard/pricing';
+                    return;
+                  }
+                  setCount(n);
+                }}
+                className={`p-4 rounded-xl border-2 text-left transition-all relative ${
+                  locked
+                    ? 'border-[var(--border)] opacity-60 cursor-not-allowed bg-[var(--bg)]'
+                    : count === n
                     ? 'border-[var(--accent)] bg-[var(--pill)]'
                     : 'border-[var(--border)] hover:border-[var(--accent)] bg-white'
                 }`}>
+                {locked && (
+                  <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] font-bold text-[var(--muted)] bg-[var(--border)] px-1.5 py-0.5 rounded-full">
+                    <Lock size={9} /> Growth+
+                  </div>
+                )}
                 <div className="font-bold text-sm mb-0.5">{n} months</div>
-                <div className="font-bold text-lg" style={{ color: count === n ? 'var(--accent)' : 'var(--dark)' }}>
+                <div className="font-bold text-lg" style={{ color: locked ? 'var(--muted)' : count === n ? 'var(--accent)' : 'var(--dark)' }}>
                   {formatNGN(monthly)}<span className="text-xs font-normal text-[var(--muted)]">/mo</span>
                 </div>
-                <div className="text-[11px] text-[var(--muted)] mt-1">{feeRate}% service fee</div>
+                <div className="text-[11px] text-[var(--muted)] mt-1">
+                  {locked ? 'Requires Growth plan' : `${feeRate}% service fee`}
+                </div>
               </button>
             );
           })}

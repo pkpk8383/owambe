@@ -300,3 +300,45 @@ CREATE TABLE IF NOT EXISTS "instalment_payments" (
 CREATE INDEX IF NOT EXISTS "instalment_payments_planId_idx" ON "instalment_payments"("planId");
 CREATE INDEX IF NOT EXISTS "instalment_payments_dueDate_idx" ON "instalment_payments"("dueDate");
 CREATE INDEX IF NOT EXISTS "instalment_payments_status_idx" ON "instalment_payments"("status");
+
+-- ─── AGGREGATOR / DISTRIBUTION TABLES ─────────────────
+DO $$ BEGIN
+  CREATE TYPE "DistributionChannel" AS ENUM (
+    'EVENTBRITE','FACEBOOK_EVENTS','GOOGLE_EVENTS','WIDGET_EMBED'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE "DistributionStatus" AS ENUM (
+    'PENDING','PUBLISHED','FAILED','UNPUBLISHED'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+CREATE TABLE IF NOT EXISTS "event_distributions" (
+  "id"                  UUID                  NOT NULL DEFAULT uuid_generate_v4(),
+  "eventId"             UUID                  NOT NULL,
+  "channel"             "DistributionChannel" NOT NULL,
+  "status"              "DistributionStatus"  NOT NULL DEFAULT 'PENDING',
+  "externalId"          TEXT,
+  "externalUrl"         TEXT,
+  "externalRef"         TEXT,
+  "lastSyncAt"          TIMESTAMPTZ,
+  "lastError"           TEXT,
+  "publishedAt"         TIMESTAMPTZ,
+  "unpublishedAt"       TIMESTAMPTZ,
+  "clickCount"          INT                   NOT NULL DEFAULT 0,
+  "registrationCount"   INT                   NOT NULL DEFAULT 0,
+  "createdAt"           TIMESTAMPTZ           NOT NULL DEFAULT NOW(),
+  "updatedAt"           TIMESTAMPTZ           NOT NULL DEFAULT NOW(),
+  CONSTRAINT "event_distributions_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "event_distributions_event_channel_key" UNIQUE ("eventId","channel"),
+  CONSTRAINT "event_distributions_eventId_fkey"
+    FOREIGN KEY ("eventId") REFERENCES "events"("id") ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS "event_distributions_eventId_idx" ON "event_distributions"("eventId");
+
+-- Add referral tracking columns to attendees
+ALTER TABLE "attendees"
+  ADD COLUMN IF NOT EXISTS "referralSource" TEXT,
+  ADD COLUMN IF NOT EXISTS "referralMedium" TEXT;

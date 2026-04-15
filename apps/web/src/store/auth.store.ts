@@ -11,6 +11,20 @@ interface User {
   avatarUrl?: string;
   isEmailVerified: boolean;
   profile?: any;
+  planner?: { plan: 'STARTER' | 'GROWTH' | 'SCALE'; id: string; companyName?: string };
+  vendor?: any;
+  consumer?: any;
+}
+
+// Helper: get current planner plan tier
+export function getPlanTier(user: User | null): 'STARTER' | 'GROWTH' | 'SCALE' {
+  return user?.planner?.plan ?? 'STARTER';
+}
+
+export function planAtLeast(user: User | null, required: 'GROWTH' | 'SCALE'): boolean {
+  const tier = getPlanTier(user);
+  const order = { STARTER: 0, GROWTH: 1, SCALE: 2 };
+  return order[tier] >= order[required];
 }
 
 interface AuthState {

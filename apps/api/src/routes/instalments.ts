@@ -129,6 +129,14 @@ instalmentsRouter.post('/',
       const { planner, consumer, user } = await getUserContext(userId);
       if (!user) throw new AppError('User not found', 404);
 
+      // ─── PLAN GATE: 6-month plans require Growth+ ──────────────────────
+      if (count === 6 && planner && planner.plan === 'STARTER') {
+        throw new AppError(
+          '6-month instalment plans require the Growth plan (₦150,000/mo). 3-month plans are available on Starter.',
+          403
+        );
+      }
+
       // Verify booking belongs to this user
       const booking = await prisma.booking.findFirst({
         where: {

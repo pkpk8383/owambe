@@ -419,6 +419,8 @@ model Event {
   sponsors      EventSponsor[]
   emailCampaigns EmailCampaign[]
   checkIns      CheckIn[]
+  contracts     Contract[]
+  distributions EventDistribution[]
 
   @@index([plannerId])
   @@index([status])
@@ -464,6 +466,8 @@ model Attendee {
   qrCode         String        @unique
   status         CheckInStatus @default(REGISTERED)
   promoCode      String?
+  referralSource String?   // "EVENTBRITE" | "FACEBOOK" | "WIDGET" | "DIRECT"
+  referralMedium String?   // hostname of embedding site for widgets
   amountPaid     Decimal       @db.Decimal(12, 2)
   paystackRef    String?
   registeredAt   DateTime      @default(now())
@@ -993,5 +997,51 @@ model InstalmentPayment {
   @@index([dueDate])
   @@index([status])
   @@map("instalment_payments")
+}
+
+// ─── AGGREGATOR / DISTRIBUTION ───────────────────────
+enum DistributionChannel {
+  EVENTBRITE
+  FACEBOOK_EVENTS
+  GOOGLE_EVENTS
+  WIDGET_EMBED    // iFrame widget on external sites
+}
+
+enum DistributionStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+  UNPUBLISHED
+}
+
+model EventDistribution {
+  id              String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  eventId         String               @db.Uuid
+  channel         DistributionChannel
+  status          DistributionStatus   @default(PENDING)
+
+  // External IDs returned by each channel on publish
+  externalId      String?   // Eventbrite event ID, FB event ID, etc.
+  externalUrl     String?   // Link to the listing on the channel
+  externalRef     String?   // Any extra ref (FB post ID, etc.)
+
+  // Sync tracking
+  lastSyncAt      DateTime?
+  lastError       String?
+  publishedAt     DateTime?
+  unpublishedAt   DateTime?
+
+  // Source attribution: bookings/registrations from this channel
+  clickCount      Int       @default(0)
+  registrationCount Int     @default(0)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, channel])
+  @@index([eventId])
+  @@map("event_distributions")
 }
 

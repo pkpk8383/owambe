@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { eventsApi, ticketsApi, attendeesApi, speakersApi, sponsorsApi, contractsApi } from '@/lib/api';
+import { eventsApi, ticketsApi, attendeesApi, speakersApi, sponsorsApi, contractsApi, distributionApi } from '@/lib/api';
 import { formatNGN, formatDate, formatTimeAgo, EVENT_STATUS_CONFIG, cn } from '@/lib/utils';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -10,10 +10,12 @@ import { useState } from 'react';
 import {
   ArrowLeft, Edit2, Send, Trash2, QrCode, Users, Ticket,
   Mic, Trophy, FileText, BarChart2, Mail, Loader2, ExternalLink,
+  Share2, Radio, Copy, CheckCircle2, Globe,
 } from 'lucide-react';
 import { StatCard } from '@/components/ui';
+import { useAuthStore, getPlanTier, planAtLeast } from '@/store/auth.store';
 
-const TABS = ['Overview', 'Attendees', 'Tickets', 'Speakers', 'Sponsors', 'Contracts'] as const;
+const TABS = ['Overview', 'Attendees', 'Tickets', 'Speakers', 'Sponsors', 'Contracts', 'Distribute'] as const;
 type Tab = typeof TABS[number];
 
 export default function EventDetailPage() {
@@ -51,10 +53,40 @@ export default function EventDetailPage() {
     enabled: activeTab === 'Sponsors',
   });
 
+  const { data: distributionData, refetch: refetchDist } = useQuery({
+    queryKey: ['distributions', id],
+    queryFn: () => distributionApi.list(id).then(r => r.data),
+    enabled: activeTab === 'Distribute',
+  });
+
   const { data: contractsData } = useQuery({
     queryKey: ['contracts', { eventId: id }],
     queryFn: () => contractsApi.list({ limit: 50 }).then(r => r.data),
     enabled: activeTab === 'Contracts',
+  });
+
+  const { user } = useAuthStore();
+  const planTier = getPlanTier(user);
+  const isGrowthPlus = planAtLeast(user, 'GROWTH');
+  const [copiedSnippet, setCopiedSnippet] = useState(false);
+
+  function copySnippet(text: string) {
+    navigator.clipboard.writeText(text);
+    setCopiedSnippet(true);
+    setTimeout(() => setCopiedSnippet(false), 2000);
+  }
+
+  const pushMutation = useMutation({
+    mutationFn: (channel: string) => distributionApi.push(id, channel),
+    onSuccess: (res, channel) => {
+      if (res.data.success) {
+        toast.success(`✅ Published to ${channel.replace('_', ' ')}`);
+      } else {
+        toast.error(res.data.error || 'Push failed');
+      }
+      refetchDist();
+    },
+    onError: (e: any) => toast.error(e.response?.data?.error || 'Push failed'),
   });
 
   const publishMutation = useMutation({
@@ -170,6 +202,7 @@ export default function EventDetailPage() {
             {tab === 'Speakers' && <Mic size={11} />}
             {tab === 'Sponsors' && <Trophy size={11} />}
             {tab === 'Contracts' && <FileText size={11} />}
+            {tab === 'Distribute' && <Share2 size={11} />}
             {tab}
           </button>
         ))}
@@ -349,6 +382,192 @@ export default function EventDetailPage() {
             ))}
             {sponsors.length === 0 && <div className="col-span-3 text-center py-8 text-sm text-[var(--muted)]">No sponsors added</div>}
           </div>
+        </div>
+      )}
+
+
+      {activeTab === 'Distribute' && (
+        <div className="space-y-5">
+          {/* Option C: Widget Embed */}
+          <div className="card p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-xl bg-[var(--pill)] flex items-center justify-center">
+                <Globe size={16} className="text-[var(--accent)]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm">Embedded Booking Widget</h3>
+                <p className="text-xs text-[var(--muted)]">Drop this on any website — BellaNaija, corporate intranets, personal sites</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {(['card', 'full', 'button'] as const).map(mode => {
+                const labels: Record<string, string> = {
+                  card: '🎴 Card + link',
+                  full: '📋 Full form',
+                  button: '🔘 Button only',
+                };
+                const needsGrowth = mode === 'full' && !isGrowthPlus;
+                return (
+                  <div key={mode} className="relative">
+                    <button
+                      onClick={async () => {
+                        if (needsGrowth) {
+                          toast.error('Full inline widget requires the Growth plan.');
+                          return;
+                        }
+                        const res = await distributionApi.getWidgetSnippet(id, { mode });
+                        copySnippet(res.data.snippet);
+                        toast.success('Widget code copied!');
+                      }}
+                      className={`card p-3 text-left transition-colors w-full ${needsGrowth ? 'opacity-50 cursor-not-allowed' : 'hover:border-[var(--accent)] cursor-pointer'}`}>
+                      <div className="text-sm font-semibold mb-0.5">{labels[mode]}</div>
+                      <div className="text-[11px] text-[var(--muted)]">
+                        {needsGrowth ? 'Growth plan required' : 'Copy embed code'}
+                      </div>
+                    </button>
+                    {needsGrowth && (
+                      <a href="/dashboard/pricing"
+                        className="absolute top-1.5 right-1.5 text-[10px] font-bold text-[var(--accent)] bg-[var(--pill)] px-1.5 py-0.5 rounded-full">
+                        Growth+
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="bg-[var(--bg)] rounded-lg p-3 border border-[var(--border)]">
+              <div className="text-[11px] font-mono text-[var(--muted)] leading-relaxed">
+                {`<script src="https://portal.owambe.com/widget/${event.slug}" data-mode="card"></script>`}
+              </div>
+            </div>
+            <p className="text-[11px] text-[var(--muted)] mt-2">
+              Widget auto-resizes. Registrations appear in your Attendees tab with source: WIDGET.
+            </p>
+          </div>
+
+          {/* Option A: Channel Pushes */}
+          <div className="card p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-xl bg-[var(--pill)] flex items-center justify-center">
+                <Radio size={16} className="text-[var(--accent2)]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm">Distribution Channels</h3>
+                <p className="text-xs text-[var(--muted)]">Publish your event to external platforms with one click</p>
+              </div>
+            </div>
+
+            {event.status === 'DRAFT' && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-xs text-yellow-800">
+                ⚠️ Publish your event first before distributing to channels.
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {[
+                {
+                  channel: 'EVENTBRITE',
+                  logo: '🎟️',
+                  name: 'Eventbrite',
+                  desc: 'Nigeria's most-used ticketing platform. Reach millions of event-goers.',
+                  color: '#F05537',
+                  note: 'Requires EVENTBRITE_API_KEY in env',
+                  requiresGrowth: true,
+                },
+                {
+                  channel: 'FACEBOOK_EVENTS',
+                  logo: '👥',
+                  name: 'Facebook Events',
+                  desc: 'Create a Facebook event on your Page. Reach your followers instantly.',
+                  color: '#1877F2',
+                  note: 'Requires Facebook Page token + Page ID',
+                  requiresGrowth: true,
+                },
+                {
+                  channel: 'GOOGLE_EVENTS',
+                  logo: '🔍',
+                  name: 'Google Events',
+                  desc: 'Appear in Google Search event results via structured data + Indexing API.',
+                  color: '#4285F4',
+                  note: 'Works automatically when event is published',
+                  requiresGrowth: false,
+                },
+              ].map(ch => {
+                const existing = distributionData?.distributions?.find(
+                  (d: any) => d.channel === ch.channel
+                );
+                const isPublished = existing?.status === 'PUBLISHED';
+                const isFailed = existing?.status === 'FAILED';
+
+                return (
+                  <div key={ch.channel} className="flex items-start gap-4 p-4 border border-[var(--border)] rounded-xl">
+                    <div className="text-2xl flex-shrink-0">{ch.logo}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="font-bold text-sm">{ch.name}</span>
+                        {isPublished && (
+                          <span className="badge-confirmed text-[10px]">Live</span>
+                        )}
+                        {isFailed && (
+                          <span className="badge-danger text-[10px]">Failed</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-[var(--muted)] mb-1">{ch.desc}</p>
+                      {existing?.externalUrl && (
+                        <a href={existing.externalUrl} target="_blank" rel="noopener noreferrer"
+                          className="text-[11px] text-[var(--accent)] hover:underline inline-flex items-center gap-1">
+                          <ExternalLink size={10} /> View on {ch.name}
+                        </a>
+                      )}
+                      {existing?.lastError && (
+                        <p className="text-[11px] text-red-500 mt-1">Error: {existing.lastError}</p>
+                      )}
+                      <p className="text-[10px] text-[var(--border)] mt-1">{ch.note}</p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      {isPublished ? (
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-green-600">
+                          <CheckCircle2 size={13} /> Published
+                        </div>
+                      ) : ch.requiresGrowth && !isGrowthPlus ? (
+                        <a href="/dashboard/pricing"
+                          className="text-xs font-bold text-[var(--accent)] hover:underline whitespace-nowrap flex items-center gap-1">
+                          Growth+ →
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => pushMutation.mutate(ch.channel)}
+                          disabled={pushMutation.isPending || event.status === 'DRAFT'}
+                          className="btn-primary text-xs px-3 py-1.5 disabled:opacity-50">
+                          {pushMutation.isPending ? '...' : 'Publish →'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Attribution stats */}
+          {distributionData?.distributions?.some((d: any) => d.clickCount > 0 || d.registrationCount > 0) && (
+            <div className="card p-5">
+              <h3 className="font-bold text-sm mb-3">Channel Attribution</h3>
+              <div className="space-y-2">
+                {distributionData.distributions
+                  .filter((d: any) => d.status === 'PUBLISHED')
+                  .map((d: any) => (
+                    <div key={d.id} className="flex items-center justify-between py-2 border-b border-[var(--border)] last:border-0">
+                      <span className="text-sm font-medium">{d.channel.replace('_', ' ')}</span>
+                      <div className="flex gap-4 text-xs text-[var(--muted)]">
+                        <span><strong className="text-[var(--dark)]">{d.clickCount}</strong> clicks</span>
+                        <span><strong className="text-[var(--accent)]">{d.registrationCount}</strong> registrations</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

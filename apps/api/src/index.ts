@@ -34,6 +34,7 @@ import { waitlistRouter } from './routes/waitlist';
 import { ticketsRouter } from './routes/tickets';
 import { crmRouter } from './routes/crm';
 import { instalmentsRouter } from './routes/instalments';
+import { distributionRouter } from './routes/distribution';
 
 import { initSocket } from './socket';
 import { logger } from './utils/logger';
@@ -102,6 +103,7 @@ app.use('/api/waitlist', waitlistRouter);
 app.use('/api/tickets', ticketsRouter);
 app.use('/api/crm', crmRouter);
 app.use('/api/instalments', instalmentsRouter);
+app.use('/api/distribution', distributionRouter);
 
 app.use((_req, res) => { res.status(404).json({ success: false, error: 'Route not found' }); });
 app.use(errorHandler);

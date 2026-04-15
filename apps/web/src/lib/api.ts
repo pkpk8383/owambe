@@ -156,7 +156,10 @@ export const waitlistApi = {
 };
 
 export const attendeesApi = {
-  list: (eventId: string, params?: any) => api.get(`/attendees/event/${eventId}`, { params }),
+  list: (eventId: string, params?: any) => api.get(`/attendees/event/${eventId,
+  export: (eventId: string, format: 'csv' | 'xlsx' = 'csv') =>
+    api.get(`/attendees/event/${eventId}/export`, { params: { format }, responseType: 'blob' }),
+}`, { params }),
   checkIn: (data: { qrCode: string; eventId: string }) => api.post('/attendees/checkin', data),
   getTicket: (qrCode: string) => api.get(`/attendees/ticket/${qrCode}`),
 };
@@ -236,6 +239,17 @@ export const instalmentApi = {
     api.post(`/instalments/${id}/cancel`, { reason }),
   retry: (planId: string, paymentId: string) =>
     api.post(`/instalments/${planId}/retry/${paymentId}`),
+};
+
+
+export const distributionApi = {
+  list: (eventId: string) => api.get(`/distribution/${eventId}/distributions`),
+  push: (eventId: string, channel: string) =>
+    api.post(`/distribution/${eventId}/distributions/push`, { channel }),
+  unpublish: (eventId: string, distId: string) =>
+    api.post(`/distribution/${eventId}/distributions/${distId}/unpublish`),
+  getWidgetSnippet: (eventId: string, opts?: { mode?: string; primaryColor?: string; accentColor?: string; width?: string }) =>
+    api.post(`/distribution/${eventId}/distributions/widget-snippet`, opts || { mode: 'card' }),
 };
 
 export const uploadApi = {

@@ -68,7 +68,6 @@ export default async function WidgetPage({
         </head>
         <body>
           <button
-            onClick={() => {}}
             style={{
               width: '100%', height: 56,
               background: `var(--w-primary)`, color: '#fff',
@@ -76,6 +75,7 @@ export default async function WidgetPage({
               fontSize: 15, fontWeight: 700, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             }}
+            // @ts-ignore — onClick handled by inline script
             onClick="openEvent()">
             🎟️ Register for {event.name}
             {minPrice > 0 && ` · From ₦${minPrice.toLocaleString('en-NG')}`}

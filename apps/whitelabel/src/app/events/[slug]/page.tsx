@@ -226,7 +226,7 @@ export default async function EventPage({ params }: { params: { slug: string } }
 
             {/* Organiser */}
             {event.planner && (
-              <div className="card" style={{ background: 'var(--brand-primary-light)', borderColor: 'var(--brand-primary)', borderOpacity: 0.2 }}>
+              <div className="card" style={{ background: 'var(--brand-primary-light)', borderColor: 'var(--brand-primary)', opacity: 1 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--brand-primary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Organised by
                 </div>
